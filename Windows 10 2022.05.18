@@ -1,0 +1,400 @@
+@echo 절전 모드 버그 해결
+POWERCFG -X -monitor-timeout-ac 0
+POWERCFG -X -monitor-timeout-dc 0
+POWERCFG -X -disk-timeout-ac 0
+POWERCFG -X -disk-timeout-dc 0
+POWERCFG -X -standby-timeout-ac 0
+POWERCFG -X -standby-timeout-dc 0
+POWERCFG -X -hibernate-timeout-ac 0
+POWERCFG -X -hibernate-timeout-dc 0
+POWERCFG -H OFF
+
+@echo 시계 에러 패치 구글 창뛰우기 ALT+TAB.. 마우스 우클릭(붙쳐 넣기)
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\DateTime\Servers" /v 0 /t REG_SZ /d "time.google.com" -F
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\DateTime\Servers" /ve /d "0" -F
+REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\Parameters" /v NtpServer /t REG_SZ /d "time.google.com,0x9" -F 
+net start w32time
+w32tm /resync /nowait
+
+@echo 로그인 보안 잠금 휫수 조정 5회 틀리면 1시간 대기 
+net accounts /lockoutthreshold:5
+net accounts /lockoutduration:60
+net accounts /lockoutwindow:60
+
+@echo dns 구글로 변경
+netsh interface ipv4 set dns "이더넷" static 8.8.8.8
+netsh interface ipv4 add dns "이더넷" 8.8.4.4 index=2
+
+netsh interface ipv4 set dns "Ethernet" static 8.8.8.8
+netsh interface ipv4 add dns "Ethernet" 8.8.4.4 index=2
+
+netsh interface set interface "이더넷" disable
+netsh interface set interface "이더넷" enable
+
+
+@echo dns 구글로 변경 파워쉘
+Set-DNSClientServerAddress "이더넷" -ServerAddresses ("8.8.8.8","8.8.4.4")
+Set-DNSClientServerAddress "Ethernet" -ServerAddresses ("8.8.8.8","8.8.4.4")
+
+https://winaero.com/disable-network-adapter-windows-10/
+Disable-NetAdapter -Name "이더넷" -Confirm‎:$false
+Enable-NetAdapter -Name "이더넷" -Confirm‎:$false
+
+Disable-NetAdapter -Name "Ethernet" -Confirm‎:$false
+Enable-NetAdapter -Name "Ethernet" -Confirm‎:$false
+ 
+ 
+@echo ipv6 사용안함
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters" /v DisabledComponents /t REG_DWORD /d 0xFFFFFFFF /f
+
+ 
+echo [upnp 사용안함]
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\DirectPlayNATHelp\DPNHUPnP" /v UPnPMode /t REG_DWORD /d 2 
+
+ 
+echo vpn 사용안함 
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\RasMan\Parameters\Config\VpnCostedNetworkSettings" /v "NoRoamingNetwork" /t REG_DWORD /d "1" /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\RasMan\Parameters\Config\VpnCostedNetworkSettings" /v "NoCostedNetwork" /t REG_DWORD /d "1" /f
+
+ 
+echo LMHOSTS 사용안함 
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT\Parameters" /v EnableLMHOSTS /t REG_DWORD /d "0" /f
+
+ 
+echo 원격 클립보드 사용안함
+https://amionrails.wordpress.com/2020/04/16/how-to-fix-freezes-disconnection-in-rdp/
+
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v "fdisableclip" /t REG_DWORD /d "0" /f 
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v "DisablePasswordSaving" /t REG_DWORD /d "1" /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\Client" /v "fEnableUsbBlockDeviceBySetupClass" /t REG_DWORD /d "0" /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\Client" /v "fEnableUsbNoAckIsochWriteToDevice" /t REG_DWORD /d "0" /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\Client" /v "fEnableUsbSelectDeviceByInterface" /t REG_DWORD /d "0" /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\Client" /v "fClientDisableUDP" /t REG_DWORD /d "1" /f
+
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\Client\UsbBlockDeviceBySetupClasses" /v "1000" /f
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\Client\UsbSelectDeviceByInterfaces" /v "1000" /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\Client\UsbBlockDeviceBySetupClasses" /v "0" /t REG_SZ /d "{3376f4ce-ff8d-40a2-a80f-bb4359d1415c}"
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\Client\UsbSelectDeviceByInterfaces" /v "0" /t REG_SZ /d "{6bdd1fc6-810f-11d0-bec7-08002be2092f}"
+
+ 
+echo 원격셀 허용안함 https://admx.help/?Category=Windows_10_2016&Policy=Microsoft.Policies.WindowsRemoteShell::AllowRemoteShellAccess&Language=ko-kr
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WinRM\Service\WinRS" /v "AllowRemoteShellAccess" /t REG_DWORD /d "0" /f
+
+ 
+echo 홈구릅 가입 거부
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\HomeGroup" /v "DisableHomeGroup" /t REG_DWORD /d "1" /f
+
+ 
+echo 사용자 클립보드 사용안함
+https://discourse.pi64.win/t/optimizing-windows-10-services-for-increased-performance/178
+reg add “HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\cbdhsvc” /v Start /t REG_DWORD /d 4 /f
+reg add “HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\cbdhsvc_17b52e” /v Start /t REG_DWORD /d 4 /f
+
+ 
+echo imap 사용안하게 
+https://admx.help/?Category=Office2016&Policy=outlk16.Office.Microsoft.Policies.Windows::L_Preventusersfromaddingemailaccounttypes&Language=ko-kr
+https://superuser.com/questions/1677845/windows-10-pop3-and-imap-is-disabled-is-there-a-way-to-enable-it
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Office\16.0\Outlook\Options" /v "disableexchange" /t REG_DWORD /d "1" /f 
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Office\16.0\Outlook\Options" /v "disableeas" /t REG_DWORD /d "1" /f
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Office\16.0\Outlook\Options" /v "disablepop3" /t REG_DWORD /d "1" /f
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Office\16.0\Outlook\Options" /v "disableimap" /t REG_DWORD /d "1" /f
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Office\16.0\Outlook\Options" /v "disableothertypes" /t REG_DWORD /d "1" /f
+
+ 
+echo vpn 사용자 변경 금지
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager\default\Settings\AllowVPN" /v "value" /t REG_DWORD /d "0" /f
+금지 하여도 버그로 인해 바뀌는 경우 어쩔수 없다.
+
+ 
+내가 불편만함 타사 백신이 지배 하여 상관 없음
+echo 앱 및 파일 검사 평판 기반 보호 Windows Defender SmartScreen 가 자꾸 꺼져서.. 관리자가 관리 형태로 바꾸어 보았다.
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\System" /v "EnableSmartScreen" /t REG_DWORD /d "1" /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\System" /v "ShellSmartScreenLevel" /t REG_SZ /d "Block" /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" /v "SmartScreenEnabled" /t REG_SZ /d "Block" /f
+
+echo 사용자 동의 없이 앱 설치 관리자로
+https://admx.help/?Category=EdgeChromium&Policy=Microsoft.Policies.Edge::SmartScreenPuaEnabled&Language=ko-kr
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge" /v "SmartScreenPuaEnabled" /t REG_DWORD /d "1" /f 
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Edge" /v "SmartScreenPuaEnabled" /t REG_DWORD /d "1" /f 
+
+ 
+echo 새로고침 안되는 버그 v3 라이프 문제.
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\explorer.exe" /v DontUseDesktopChangeRouter /t REG_DWORD /d 1 /f
+REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Update" /v UpdateMode /t REG_DWORD /d 0
+
+ 
+@echo 네트워크 보호
+reg add "HKLM\System\CurrentControlSet\Control\Lsa" /v DisableDomainCreds /t REG_DWORD /d 1 /f 
+reg add "HKLM\System\CurrentControlSet\Control\Lsa" /v SubmitControl /t REG_DWORD /d 0 /f
+reg add "HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications" /v NoTileApplicationNotification /t REG_DWORD /d 1 /f
+
+ 
+@echo 로그인수 제안 하기 (만약 여러명이 쓸 경우 건들지 마세요 혼자 쓰는 경우 가정집에서)
+reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" /v CachedLogonsCount /t REG_SZ /d 0 /f
+
+ 
+@echo 사용 하지 않는 아웃룩 차단
+reg add HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Office\16.0\Outlook\setup /T REG_DWORD /F /V DisableOffice365SimplifiedAccountCreation /D 1
+
+ 
+@echo 인증 수락 거절 LAN Manager
+reg add HKLM\SYSTEM\CurrentControlSet\Control\Lsa\ /v lmcompatibilitylevel /t REG_DWORD /d 5 /f
+
+@echo LSA 보호
+reg add "HKLM\System\CurrentControlSet\Control\Lsa" /v RunAsPPL /t REG_DWORD /d 1 /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\LSASS.exe" /v AuditLevel /t REG_DWORD /d 8 /f
+
+ 
+echo dns 보호
+reg add HKLM\SYSTEM\CurrentControlSet\Services\Dnscache\Parameters /v EnableAutoDoh /t REG_DWORD /d 2 /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\DNS\Parameters" /v "TcpReceivePacketSize" /t REG_DWORD /d 0xFF00 /f
+
+
+@echo 원격지원 해제
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Remote Assistance" /v "fAllowToGetHelp" /t REG_DWORD /d "0" /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Remote Assistance" /v "fAllowFullControl" /t REG_DWORD /d "0" /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Remote Assistance" /v "fEnableChatControl" /t REG_DWORD /d "0" /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Remote Assistance" /v "MaxTicketExpiry" /t REG_DWORD /d "0" /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Remote Assistance" /v "MaxTicketExpiryUnits" /t REG_DWORD /d "0" /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v "fDenyTSConnections" /t REG_DWORD /d "1" /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 1 /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" /v UserAuthentication /t REG_DWORD /d 1 /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" /v SecurityLayer /t REG_DWORD /d 2 /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" /v fInheritAutoLogon /t REG_DWORD /d 0 /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" /v fAllowSecProtocolNegotiation /t REG_DWORD /d 1 /f
+gpupdate /force
+
+@echo 확인 윈도우키 + R
+Sysdm.cpl
+
+@echo 네트워크 공유 끄기
+netsh advfirewall firewall set rule group="Network Discovery" new enable=No
+@echo 영문 윈도우의 경우
+
+netsh advfirewall firewall set rule group="네트워크 검색" new enable=No
+@echo 한글 윈도우의 경우.
+
+@echo 랜섬 예방 차단. 과거자료 > 파워쉘
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB1 -Type DWORD -Value 0 -Force
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB2 -Type DWORD -Value 0 -Force
+
+ 
+@echo usb 자동실행 중지
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoDriveTypeAutorun" /t REG_DWORD /d "0xFF" /f
+
+ 
+@echo usb 윈도우10 부팅후 장치 설정을 완료합니다 사용안함 https://mastmanban.tistory.com/1063 
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\UserProfileEngagement" /v "ScoobeSystemSettingEnabled" /d 0 /t REG_DWORD /f
+
+ 
+@echo usb ssd 수명 https://www.thewindowsclub.com/disable-superfetch-prefetch-ssd
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" /v "EnablePrefetcher" /t REG_DWORD /d 0 /f
+
+ 
+@echo 0x8900002A Defrag 264 오류 (D:)에서 다시 잘라내기을(를) 완료할 수 없습니다.
+SCHTASKS /change /tn \Microsoft\Windows\Defrag\ScheduledDefrag /DISABLE
+SCHTASKS /End /tn \Microsoft\Windows\Defrag\ScheduledDefrag
+
+ 
+@echo 음성 관련
+schtasks /Change /TN "Microsoft\Windows\Speech\SpeechModelDownloadTask" /Disable
+
+@echo 공유 폴더 제거
+net share C$ /delete
+net share D$ /delete
+net share ADMIN$ /delete
+
+@echo 기본공유 사용안함
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" /v AutoShareWks /t REG_DWORD /d 0
+
+@echo 윈도우키 + R
+fsmgmt.msc
+
+@echo 게스트 차단 
+REG ADD HKLM\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters /f /v AllowInsecureGuestAuth /t REG_SZ /d 0
+
+@echo IPC$ 차단
+reg.exe add hkey_local_machine\system\currentcontrolset\control\lsa\ /v RestrictAnonymous /t reg_dword /d 1 /f 
+net share /delete IPC$
+
+@echo IPC$ 삭제 예약 작업(부팅 할때 마다 부활 하기 때문에)
+schtasks /create /tn "remove_IPC$" /tr "%WINDIR%\System32\net.exe share /delete IPC$" /sc ONLOGON /rl HIGHEST /np
+
+@echo NTLMv2 보안 강화
+reg add HKEY_LOCAL_MACHINE\System\CurrentControlSet\control\LSA\MSV1_0 /v NtlmMinClientSec /t REG_DWORD /d 0x00080000 /f
+reg add HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Lsa /v LmCompatibilityLevel /t REG_DWORD /d 4 /f
+
+@echo 프로세스 감사 강화
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters" /v AllowEncryptionOracle /t REG_DWORD /d 0
+
+ 
+@echo 파워 쪽에 가서 수정 하면 좋지만 아쉽게 수정 버튼이 숨어 있어서 수정이 불가능 하다
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Power" /v HiberbootEnabled /t REG_DWORD /d "0" /f
+
+
+@echo 파워쉘 445 차단 관련
+set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlset\Services\Lanmanserver\Parameters" SMB1 -Type DWORD -Value 0 -Force
+set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlset\Services\Lanmanserver\Parameters" SMB2 -Type DWORD -Value 0 -Force
+
+https://www.thewindowsclub.com/what-is-yourphone-exe-process-in-windows-10-do-i-remove-it
+https://docs.microsoft.com/ko-kr/windows/privacy/manage-windows-1809-endpoints
+
+전화 제거 바이러스가 켜는건지 켜진다
+Get-AppxPackage Microsoft.YourPhone -AllUsers | Remove-AppxPackage
+Get-AppxPackage Wallet | Remove-AppxPackage
+Get-AppxPackage *Microsoft. SkypeApp* | Remove-AppxPackage
+
+ 
+@echo 윈도우 udp 137-139 알러짐 포트 차단 메일 포트
+netsh advfirewall firewall add rule name="SMB_Block" dir=in action=block localport=137-139, profile=any protocol=tcp
+netsh advfirewall firewall add rule name="SMB_Block" dir=in action=block localport=137-139, profile=any protocol=udp
+netsh advfirewall firewall add rule name="mail_block" dir=in action=block localport=25,110,143,587,465,993-995,1025,1027,1029, profile=any protocol=tcp
+netsh advfirewall firewall add rule name="mail_block" dir=out action=block localport=25,110,143,587,465,993-995,1025,1027,1029, profile=any protocol=tcp
+netsh advFirewall Firewall add rule name="PING IPv6" protocol=icmpv6:8,any dir=in action=block
+netsh advFirewall Firewall add rule name="PING IPv6" protocol=icmpv6:8,any dir=out action=block
+
+
+@echo 의심 가는 자격증명 삭제 virtualapp/didogical 
+Windows Key+R 
+netplwiz 
+
+ 
+echo [EnableMulticast 멀티 캐스터 사용안함 LLMNR] 5353 prot
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" /v EnableMulticast /t REG_DWORD /d 0
+
+echo Edge ssdp 사용안함 https://www.tenforums.com/network-sharing/192167-how-do-i-block-multicast-traffic.html
+reg add "HKLM\Software\Policies\Microsoft\Edge" /v "EnableMediaRouter" /t REG_DWORD /d "0" /f
+
+
+echo 1900 포트 연결 관련 해제
+sc stop "SSDPSRV" & sc config "SSDPSRV" start= disabled
+
+echo 서치 해제.
+sc stop "WSearch" & sc config "WSearch" start= disabled
+
+echo 프린터
+sc stop "Spooler" & sc config "Spooler" start= disabled 
+sc stop "msdtc" & sc config "msdtc" start= disabled
+
+echo 전화 
+sc stop "TapiSrv" & sc config "TapiSrv" start= disabled 
+
+echo 넷바이오 게스트 하려면 이게 필요 한단다. 
+sc stop "lmhosts" & sc config "lmhosts" start= disabled
+
+
+파워쉘 쓸모 없는 서비스 사용안함
+Disable-NetAdapterBinding -Name "이더넷" -ComponentID ms_implat
+Disable-NetAdapterBinding -Name "이더넷" -ComponentID ms_lldp
+Disable-NetAdapterBinding -Name "이더넷" -ComponentID ms_lltdio
+Disable-NetAdapterBinding -Name "이더넷" -ComponentID ms_pacer
+Disable-NetAdapterBinding -Name "이더넷" -ComponentID ms_rspndr
+Disable-NetAdapterBinding -Name "이더넷" -ComponentID ms_server
+Disable-NetAdapterBinding -Name "이더넷" -ComponentID ms_tcpip6
+Disable-NetAdapterBinding -Name "이더넷" -ComponentID ms_msclient
+
+ 
+echo 윈도우키+R  WF.msc
+echo 원격 지원 기본 허용 관련 해제
+netsh advfirewall firewall show rule name=all > txt.txt
+netsh  advfirewall firewall set rule group="원격 지원" new enable=no
+netsh  advfirewall firewall set rule group="Windows 원격 관리" new enable=no
+원격 지원 허용된거 끄기
+
+netsh  advfirewall firewall set rule group="네트워크 검색" new enable=No
+netsh  advfirewall firewall set rule group="근접 공유" new enable=no
+netsh  advfirewall firewall set rule group="메일 및 계정" new enable=no
+netsh  advfirewall firewall set rule group="메일 및 일정" new enable=no
+netsh  advfirewall firewall set rule group="도움말" new enable=no
+netsh  advfirewall firewall set rule group="무선 디스플레이" new enable=no
+netsh  advfirewall firewall set rule group="사용자 휴대폰" new enable=no
+netsh  advfirewall firewall set rule group="회사 또는 학교 계정" new enable=no
+netsh  advfirewall firewall set rule group="WLAN 서비스 - WFD 서비스 커널 모드 드라이버 규칙" new enable=no
+netsh  advfirewall firewall set rule group="WLAN 서비스 - WFD 응용 프로그램 서비스 플랫폼 조정 프로토콜(UDP 사용)" new enable=no
+netsh  advfirewall firewall set rule group="Windows 카메라" new enable=no
+netsh  advfirewall firewall set rule group="Windows Search" new enable=no
+netsh  advfirewall firewall set rule group="Wi-Fi Direct 네트워크 검색" new enable=no
+netsh  advfirewall firewall set rule group="내레이터" new enable=no
+netsh  advfirewall firewall set rule group="계정" new enable=no
+netsh  advfirewall firewall set rule group="DIAL 프로토콜 서버" new enable=no
+netsh  advfirewall firewall set rule group="alljoyn 라우터" new enable=no
+netsh  advfirewall firewall set rule group="mixed reality 포털" new enable=no
+netsh  advfirewall firewall set rule group="Windows 계산기" new enable=no
+netsh  advfirewall firewall set rule group="Xbox TCUI" new enable=no
+netsh  advfirewall firewall set rule group="Xbox Game Bar Plugin" new enable=no
+netsh  advfirewall firewall set rule group="Xbox Identity Provider" new enable=no
+netsh  advfirewall firewall set rule group="Xbox Game Bar" new enable=no
+netsh  advfirewall firewall set rule group="Xbox Game UI" new enable=no
+netsh  advfirewall firewall set rule group="장치로 캐스트 기능" new enable=no
+netsh  advfirewall firewall set rule group="연결된 장치 플랫폼" new enable=no
+netsh  advfirewall firewall set rule group="영화 및 TV" new enable=no
+netsh  advfirewall firewall set rule group="Microsoft 가족 기능" new enable=no
+netsh  advfirewall firewall set rule group="Microsoft 피플" new enable=no
+netsh  advfirewall firewall set rule name="@FirewallAPI.dll,-80201" ^       new enable=no profile=private,domain,Public
+netsh  advfirewall firewall set rule name="@FirewallAPI.dll,-80206" ^       new enable=no profile=private,domain,Public
+
+netsh advfirewall firewall delete rule name="@FirewallAPI.dll,-80201"
+netsh advfirewall firewall delete rule name="@FirewallAPI.dll,-80204"
+netsh advfirewall firewall delete rule name="@FirewallAPI.dll,-80206"
+echo 그냥 삭제 하기 ㅎㅎ
+
+ 
+echo 핵심에서 ipv6 해제 하기
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - IPv6(IPv6-Out)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - IPv6(IPv6-In)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - IPv6용 DHCP(Dynamic Host Configuration Protocol)(DHCPV6-Out)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - IPv6용 DHCP(Dynamic Host Configuration Protocol)(DHCPV6-In)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 멀티캐스트 수신기 완료(ICMPv6-Out)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 멀티캐스트 수신기 완료(ICMPv6-In)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 멀티캐스트 수신기 보고서 v2(ICMPv6-Out)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 멀티캐스트 수신기 보고서 v2(ICMPv6-In)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 멀티캐스트 수신기 보고서(ICMPv6-Out)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 멀티캐스트 수신기 보고서(ICMPv6-In)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 멀티캐스트 수신기 쿼리(ICMPv6-Out)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 멀티캐스트 수신기 쿼리(ICMPv6-In)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 라우터 요청(ICMPv6-Out)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 라우터 요청(ICMPv6-In)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 라우터 알림(ICMPv6-Out)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 라우터 알림(ICMPv6-In)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 네트워크 환경 검색 알림(ICMPv6-Out)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 네트워크 환경 검색 알림(ICMPv6-In)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 네트워크 환경 검색 요청(ICMPv6-Out)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 네트워크 환경 검색 요청(ICMPv6-In)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 매개 변수 문제(ICMPv6-Out)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 매개 변수 문제(ICMPv6-In)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 시간 초과됨(ICMPv6-Out)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 시간 초과됨(ICMPv6-In)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 패킷이 너무 큼(ICMPv6-Out)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 패킷이 너무 큼(ICMPv6-In)" new enable=no
+netsh  advfirewall firewall set rule name="핵심 네트워킹 - 대상에 연결할 수 없음(ICMPv6-In)" new enable=no
+
+netsh advfirewall firewall add rule name="RDP_regla_bloquea_entrada_IN"    dir=in action=block  protocol=tcp localport=3389 remoteip=any description="Deniega RDP IN"
+netsh advfirewall firewall add rule name="RDP_regla_bloquea_entrada_OUT"   dir=out action=block protocol=tcp localport=3389 remoteip=any description="Deniega RDP OUT"
+
+
+echo 사용하지 않는 도메인(회사), 개인(사무실) 차단 하기
+netsh advfirewall set domainprofile firewallpolicy blockinboundalways,blockoutbound
+netsh advfirewall set privateprofile firewallpolicy blockinboundalways,blockoutbound
+
+
+echo PerfProc 오류 관련
+Reg add HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\PerfProc\Performance /v "Disable Performance Counters" /t REG_DWORD /d 0
+
+ 
+나쁜 ip들 차단
+https://cafe.daum.net/candan/AurF/92
+
+hosts
+https://cafe.daum.net/candan/BLQD/47
+
+
+https://chocolatey.org/install
+choco upgrade chocolatey
+choco install mkvtoolnix 
+choco upgrade mkvtoolnix -y
+
+choco install qbittorrent
+choco upgrade qbittorrent -y
+ 
+choco install wireshark
+choco upgrade wireshark -y
