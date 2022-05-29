@@ -1,0 +1,28 @@
+d:
+pnputil /enum-devices /connected > txt.txt
+notepad txt.txt
+echo 사용하지 않을 장치 관리자 찾아 보기 윈도우에서 장치 관리자를 열어 본다 오류난 경우
+
+pnputil /disable-device "USB\VID_045E&PID_00DB\6&870CE29&0&1"
+echo 사용안함
+ 
+pnputil /enable-device "USB\VID_045E&PID_00DB\6&870CE29&0&1"
+echo 사용함
+
+ 
+md d:\backup
+pnputil /export-driver * d:\backup
+echo 모든 드라이브 백업 하기
+ 
+pnputil /add-driver d:\backup\*.inf
+echo 백업한 드라이브 모두 설치( 현실적으로 이렇게 될수가 없음 폴더 형태로 구분 되기 때문에)
+ 
+for /r %i in (where /r d:\backup *.inf) do (pnputil /add-driver %i /install)
+echo 아래와 같이 for 예문을 작성 해서 등록 해야함 잘됨 ㅎㅎ 해보니 
+
+ 
+
+echo 기타 다운로드 설치
+bitsadmin /transfer 1234 /download "https://octatco.com/wp-content/uploads/2021/11/Ezfinger1_inf_win10.zip" d:\Ezfinger1_inf_win10.zip
+tar -zxvf Ezfinger1_inf_win10.zip -C d:\
+pnputil /add-driver d:\64bit\bld_fingerprint_driver.inf
