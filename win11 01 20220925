@@ -1,0 +1,502 @@
+echo https://jsb000.tistory.com/2710
+echo https://kbhost.nl/knowledgebase/bypass-tpm-and-cpu-check/
+echo 구형 컴퓨터 설치 불가 해제 레지스트 
+REG ADD "HKLM\SYSTEM\Setup\LabConfig" /v "BypassTPMCheck" /t REG_DWORD /d 1 /f
+REG ADD "HKLM\SYSTEM\Setup\LabConfig" /v "BypassSecureBootCheck" /t REG_DWORD /d 1 /f
+REG ADD "HKLM\SYSTEM\Setup\LabConfig" /v "BypassRAMCheck" /t REG_DWORD /d 1 /f
+REG ADD "HKLM\SYSTEM\Setup\LabConfig" /v "BypassStorageCheck" /t REG_DWORD /d 1 /f
+REG ADD "HKLM\SYSTEM\Setup\LabConfig" /v "BypassCPUCheck" /t REG_DWORD /d 1 /f
+
+echo 업글 안될때. ms에서 제공 하는 방법 ㅎ 
+REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\Setup\MoSetup" /v "AllowUpgradesWithUnsupportedTPMOrCPU" /t REG_DWORD /d 1 /f
+
+echo 자격 증명 악성코드가 남발 하는거 차단, 자격 증명 신뢰 할수 있는 요구
+echo 단점은 이걸 하면 먼가를 설치 할때 alt del ctrl 누르라고 구찮게 한다. 하지만 그래도 자격증명 열거 보단.. 좋다.
+echo https://admx.help/?Category=Windows_10_2016&Policy=Microsoft.Policies.CredentialsUI::EnableSecureCredentialPrompting&Language=ko-kr    
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\CredUI" /v "EnableSecureCredentialPrompting" /t REG_DWORD /d 1 /f 
+
+echo https://cafe.daum.net/candan/BLQD/68 자격 증명 메뉴 강화
+echo 로그인 비밀번호 입력 보이게 하기 버튼 숨기기 https://appuals.com/disable-password-reveal-button-in-windows-10/
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\CredUI" /v "DisablePasswordReveal" /t REG_DWORD /d 1 /f 
+ 
+echo 권한 상승시에 비밀번호 다시 물어 보기
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\CredUI" /v "EnumerateAdministrators" /t REG_DWORD /d 1 /f 
+
+echo 비밀번호 힌트 가리기 https://www.tenforums.com/tutorials/117755-enable-disable-security-questions-local-accounts-windows-10-a.html
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\CredUI" /v "NoLocalPasswordResetQuestions" /t REG_DWORD /d 1 /f 
+
+
+echo 계정 로그인 감사(어떤 놈이 내 컴퓨터 로그인 하지는지 로그에 남기기) 매우 중요함.
+AuditPol /List /Category /V
+
+echo 계정 로그온                                  {xxxx-xxxx-xxxx-xxxx-xxxx}
+echo 등록 아래 처럼.
+auditpol /set /category:"{xxxx-xxxx-xxxx-xxxx-xxxx}" /success:enable /failure:enable
+auditpol /set /category:"" /success:enable /failure:enable
+
+echo https://forbes.tistory.com/1265
+echo 오프라인 계정 만들기
+
+echo 사용자 a
+echo 암호 a
+
+echo 에러나도 계속 진행 오프라인 계정이 나온다 휴.
+(최근에 ms가 오프라인 계정을 방치 하기 때문에 온라인 계정을 강재 사용 해야 해킹을 덜 당하는 것 같습니다 최초 로그인 할때 FIDA2 보안키를 사용 하면 좀더 안전 합니다 ms 계정이 없다고 하여도 오프라인으로 만든다고 하여도 PIN 암호를 사용 하세요 해킹에 덜 당한다고 하네요.)
+
+
+echo 윈도우 시작이 검은 화면 cmd 인텔 그래픽 카드 관련 지우기
+del "%windir%\system32\*.bat"
+
+echo https://www.revouninstaller.com/start-freeware-download/ 앱 삭제(삭제 안되는 앱)
+
+
+echo 게스트 계정으로 접근 시도가 있었다. CompatTelRunner.exe
+schtasks /change /tn "Microsoft\Windows\Application Experience\Microsoft Compatibility Appraiser" /disable >nul
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DataCollection" /v AllowTelemtery /t reg_DWORD /d 0 /f
+
+
+echo 원격실행 안되게 하기 레지스트 https://www.technipages.com/prevent-users-from-running-certain-programs
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v DisallowRun /t REG_DWORD /d 1 /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun" /v 1 /t REG_SZ /d mstsc.exe /f
+
+ 
+echo 게스트 원격 차단
+icacls "%windir%\System32\mstsc.exe" 
+takeown /F "%windir%\System32\mstsc.exe" /A
+icacls "%windir%\System32\mstsc.exe" /grant Administrators:F
+icacls "%windir%\System32\mstsc.exe" /setintegritylevel H
+icacls "%windir%\System32\mstsc.exe" /deny "Guest:F" "*S-1-5-32-546:F" "*S-1-0-0:F" "*S-1-5-7:F"
+icacls "%windir%\System32\mstsc.exe" /setowner "NT SERVICE\TrustedInstaller" 
+icacls "%windir%\System32\mstsc.exe" /grant:r Administrators:RX
+icacls "%windir%\System32\mstsc.exe" 
+
+echo 등록한거 삭제
+icacls "%windir%\System32\mstsc.exe" 
+takeown /F "%windir%\System32\mstsc.exe" /A
+icacls "%windir%\System32\mstsc.exe" /grant Administrators:F
+icacls "%windir%\System32\mstsc.exe" /remove "Guest" "*S-1-5-32-546" "*S-1-0-0" "*S-1-5-7"
+icacls "%windir%\System32\mstsc.exe" /setowner "NT SERVICE\TrustedInstaller" 
+icacls "%windir%\System32\mstsc.exe" /grant:r Administrators:RX
+icacls "%windir%\System32\mstsc.exe" 
+
+
+echo https://www.ntlite.com/community/index.php?threads/windows-11.2235/page-12
+echo  Remove Chat
+Reg Add "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarMn /t REG_DWORD /d 0 /f
+Reg Add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Chat" /v ChatIcon /t REG_DWORD /d 3 /f
+
+ 
+echo 장치간 공유 해제 https://www.elevenforum.com/t/turn-on-or-off-share-across-devices-for-app-experiences-in-windows-11.3857/ 앱공유 끄기 https://github.com/Thdub/Optimize_NextGen/blob/master/Files/Scripts/RegistryTweaks/Registry%20Tweaks.bat  
+reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\CDP" /v CdpSessionUserAuthzPolicy /t REG_DWORD /d 0 /f
+reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\CDP" /v RomeSdkChannelUserAuthzPolicy /t REG_DWORD /d 0 /f
+reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\CDP" /v EnableRemoteLaunchToast /t REG_DWORD /d 0 /f
+
+echo 롤 글자 렉 걸리는 문제 크롬 끝 글자 잘리는 문제 등록
+reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\InputMethod\Settings\KOR" /v ConfigureImeVersion /t REG_DWORD /d 1 /f
+
+echo 앱 https://winaero.com/enable-or-disable-web-site-access-to-language-list-in-windows-10/ 웹 싸이트에서 내 언어 목록에 엑센스하여 관련 콘텐츠를 로컬로 표시하도록 허용(해제 하기)
+reg add "HKEY_CURRENT_USER\Control Panel\International\User Profile" /v HttpAcceptLanguageOptOut /t REG_DWORD /d 1 /f
+
+echo 업데이트 오류 https://cafe.daum.net/candan/HbCr/125 Windows.SecurityCenter.SecurityAppBroker 부여하지 않았습니다
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\wuauserv" /v "DelayedAutostart" /t REG_DWORD /d 0 /f
+sc config "wuauserv" start= delayed-auto
+sc start "wuauserv"
+
+echo 정체를 알수 없는 스토리지 실행 smphost
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\smphost" /v "Start" /t REG_DWORD /d 4 /f
+sc config "smphost" start= disabled
+sc stop "smphost"
+
+echo 원격 RDCS 구성 SessionEnv
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\SessionEnv" /v "Start" /t REG_DWORD /d 4 /f
+sc config "SessionEnv" start= disabled
+sc stop "SessionEnv"
+
+echo 사용자가 원격 컴퓨터에 대화형 TermService
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TermService" /v "Start" /t REG_DWORD /d 4 /f
+sc config "TermService" start= disabled
+sc stop "TermService"
+
+echo 프린터/드라이버/RDP UmRdpService
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\UmRdpService" /v "Start" /t REG_DWORD /d 4 /f
+sc config "UmRdpService" start= disabled
+sc stop "UmRdpService"
+
+
+echo netplwiz
+echo IIS 실행 금지
+reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun" /v 3 /t REG_SZ /d w3wp.exe /f 
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun" /v 3 /t REG_SZ /d w3wp.exe /f
+
+echo IIS 공유 관련 SMSvcHost W3wp.exe 켜는 아이 
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun" /v 5 /t REG_SZ /d smsvchost.exe /f
+
+
+echo 기업용 앱들 
+echo https://pureinfotech.com/view-installed-apps-powershell-windows-10/
+Get-AppxPackage Microsoft.PowerAutomateDesktop -AllUsers | Remove-AppxPackage 
+Get-AppxPackage MicrosoftTeams -AllUsers | Remove-AppxPackage
+
+echo https://www.minitool.com/news/ms-gaming-overlay-popup.html
+echo 게임 런처 삭제 해킹에 악용 되는듯 자격증명을 받고 계심 
+Get-AppxPackage Microsoft.XboxGamingOverlay | Remove-AppxPackage
+REG ADD "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\System\GameConfigStore" /v "GameDVR_Enabled" /t REG_DWORD /d 0 /f
+
+echo net3.5 설치 안되는 문제 usb 꼽고 X부분을 자신의 usb에 맞게 수정 예를 들자면 E? 나 F?
+DISM /Online /Enable-Feature /FeatureName:NetFx3 /All /LimitAccess /Source:X:\sources\sxs
+
+echo 넷 바이오스 사용안함 NetBIOS over TCP/IP https://cafe.daum.net/candan/GGFN/271
+$regkey = "HKLM:SYSTEM\CurrentControlSet\services\NetBT\Parameters\Interfaces"
+Get-ChildItem $regkey |foreach { Set-ItemProperty -Path "$regkey\$($_.pschildname)" -Name NetbiosOptions -Value 2 -Verbose}
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT\Parameters" /v EnableLMHOSTS /t REG_DWORD /d "0" /f
+
+echo Global.Accounts 관련 https://cafe.daum.net/candan/I45j/78  잠금 화면 추천 별걸로 해킹을 다하는 느낌.
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-Enabled" /t REG_DWORD /d "0" /f
+reg add "HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Windows\CloudContent" /v "DisableWindowsSpotlightFeatures" /t REG_DWORD /d "1" /f
+
+echo backgroundTaskHost.exe 수상함 Global.Accounts
+reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Search /v BingSearchEnabled /t REG_DWORD /d 0 /f
+reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Search /v CortanaConsent /t REG_DWORD /d 0 /f
+reg add “HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search” /v AllowCortana /t REG_DWORD /d 0 /f
+
+echo 심하면 잠금 하고 써야 할듯 수상함 ㅎ(모르는 사람 장치 관리자 등록 했더니)
+echo 이렇게 해도 안되더라. 코어에 이상한 장치가 설치 된 경우 수동으로 제거 해야 한다
+echo https://cafe.daum.net/candan/HbCr/123   
+pnputil /delete-driver oem5.inf /uninstall
+
+echo https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-deviceguard-unattend  무결성이 겹쳐서 비활성화 된듯 하다. 이렇게 하니 문제 없이 잘 작동 하였다. 코어 격리
+REG ADD "HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard" /v "EnableVirtualizationBasedSecurity" /t REG_DWORD /d 1 /f
+REG ADD "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v "LsaCfgFlags" /t REG_DWORD /d 1 /f
+REG ADD "HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard" /v "HypervisorEnforcedCodeIntegrity" /t REG_DWORD /d 1 /f
+
+echo https://docs.microsoft.com/ko-kr/windows/security/identity-protection/remote-credential-guard 원격에게 자격증명 제한 하기
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa" /v "DisableRestrictedAdmin" /t REG_DWORD /d 0 /f
+
+ 
+echo hello 모든 계정 강재 하기
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\PassportForWork" /v Enabled /t REG_DWORD /d 1 /f
+
+ 
+echo https://cafe.daum.net/candan/AurF/106 감사실패 관련 알수 없는 로그인 하는 경우. 
+echo 내보내기 
+md d:\secedit 
+secedit /export /cfg d:\secedit\cfg.ini > nul
+
+tar -cvzf secedit.zip d:\secedit
+echo 만약을 위해 압축 하기
+
+notepad d:\secedit\cfg.ini
+echo 수정하기
+
+MinimumPasswordAge = 0 (기본값) 최소 하루
+MinimumPasswordAge = 1
+
+LockoutBadCount = 0 : (기본값) 계정 정책 > 계정 잠금 정책 > 계정 잠금 임계값 https://cafe.daum.net/candan/BLQD/81
+LockoutBadCount = 5
+
+PasswordComplexity = 0 암호 복잡성 기본값 사용안함 아래 1은 사용 
+PasswordComplexity = 1
+
+MinimumPasswordLength = 0 암호 최소 길이
+MinimumPasswordLength = 14
+
+echo 14 이상 하면 오류 난다.
+
+
+SeDenyNetworkLogonRight = Guest
+SeDenyInteractiveLogonRight = Guest
+
+echo 로컬 로그인 차단 SeDenyInteractiveLogonRight
+
+SeDenyBatchLogonRight = Guest
+SeDenyServiceLogonRight = Guest
+SeDenyRemoteInteractiveLogonRight = Guest
+echo 없다면 삽입 해주기
+
+SeDenyNetworkLogonRight = Guest,*S-1-5-32-546,*S-1-0-0,*S-1-5-7,*S-1-5-14,*S-1-5-17,*S-1-5-32-555,*S-1-5-32-568,*S-1-5-32-575,*S-1-5-32-576,*S-1-5-32-577,*S-1-5-9,*S-1-5-113,*S-1-5-80-0
+SeDenyInteractiveLogonRight = Guest,*S-1-5-32-546,*S-1-0-0,*S-1-5-7,*S-1-5-14,*S-1-5-17,*S-1-5-32-555,*S-1-5-32-568,*S-1-5-32-575,*S-1-5-32-576,*S-1-5-32-577,*S-1-5-9
+SeDenyBatchLogonRight = Guest,*S-1-5-32-546,*S-1-0-0,*S-1-5-7,*S-1-5-14,*S-1-5-17,*S-1-5-32-555,*S-1-5-32-568,*S-1-5-32-575,*S-1-5-32-576,*S-1-5-32-577,*S-1-5-9
+SeDenyServiceLogonRight = Guest,*S-1-5-32-546,*S-1-0-0,*S-1-5-7,*S-1-5-14,*S-1-5-17,*S-1-5-32-555,*S-1-5-32-568,*S-1-5-32-575,*S-1-5-32-576,*S-1-5-32-577,*S-1-5-9
+SeDenyRemoteInteractiveLogonRight = Guest,*S-1-5-32-546,*S-1-0-0,*S-1-5-7,*S-1-5-113,*S-1-5-14,*S-1-5-17,*S-1-5-32-555,*S-1-5-32-568,*S-1-5-32-575,*S-1-5-32-576,*S-1-5-32-577,*S-1-5-9,*S-1-5-32-544,*S-1-1-0,*S-1-2-0,*S-1-2-1,*S-1-5-80-0
+echo 구차니즘 2개 지우면서 5개 등록 하기.
+
+SeServiceLogonRight = *S-1-5-80-0
+echo 원본 서비스 로그인 모든 프로세스 허용 https://cafe.daum.net/candan/GGFN/302   시스템이 자꾸 5 유형으로 로그인 하는 
+
+SeServiceLogonRight = *S-1-5-20
+echo 수정 네트워크 서비스로 제한 하기 
+
+SeNetworkLogonRight = *S-1-1-0,*S-1-5-32-544,*S-1-5-32-545,*S-1-5-32-551
+echo 원본 네트워크 로그인 모든 사용자 읽기
+
+SeNetworkLogonRight = *S-1-5-32-544,*S-1-5-32-545
+echo 사용자 관리자로 제한
+
+SeChangeNotifyPrivilege = *S-1-1-0,*S-1-5-19,*S-1-5-20,*S-1-5-32-544,*S-1-5-32-545,*S-1-5-32-551
+echo 원본 트래버스 무시 모든 사용자 문제 보완
+
+SeChangeNotifyPrivilege = *S-1-5-19,*S-1-5-20,*S-1-5-32-544,*S-1-5-32-545,*S-1-5-32-551
+echo 모든 사용자를 제거 해야 한다고 한다 https://docs.microsoft.com/ko-kr/windows/security/threat-protection/security-policy-settings/bypass-traverse-checking
+
+echo (ms 계정이 없는 오프라인 경우에만 사용 하세요) 신뢰할수 있는 자격증명 추가 해주기 자격증명 열거방어 500이 어드민이다 
+
+SeInteractiveLogonRight = Guest,*S-1-5-32-544,*S-1-5-32-545,*S-1-5-32-551
+SeInteractiveLogonRight = *S-1-5-32-544,*S-1-5-32-545,*S-1-5-32-551
+echo 로컬 로그인 허용에서 게스트 제거 Guest *S-1-5-32-546 게스트를 의미함
+
+SeInteractiveLogonRight = *S-1-5-32-544,*S-1-5-32-545,*S-1-5-32-551
+echo *S-1-5-32-546 게스트 계정 있으면 삭제
+
+SeCreateTokenPrivilege = *S-1-2-0
+echo 토큰 관련 로컬로 하기
+
+SeRelabelPrivilege = Administrator
+echo 레이블 관련 관리자로 한정하기
+
+echo 적용하기
+secedit /configure /db test.sdb /cfg d:\secedit\cfg.ini
+echo 입력 하기는 안됨 -_-;; 아쉽게.. 이건 됨. db는 그냥 아무거나 적으면 된다. 없다면
+
+echo 손상여부 확인 즉 내가 만든 것과 시스템에 적용 된 것과 같은지 비교
+secedit /validate d:\secedit\cfg.ini 
+
+echo 다시 두번째 압축
+tar -cvzf secedit_22.zip d:\secedit
+
+echo https://womenssafetyhackathon.com/how-do-i-disable-tabtip-exe/ 해킹 당하는 것 같은 터치 패널 사용안함 TabTip.exe
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Wisp\Touch" /v "TouchGate" /t REG_DWORD /d "0" /f
+
+echo https://www.droidwin.com/how-to-remove-recommended-section-from-windows-11-start-menu/
+echo 맞춤 항목 숨기기 비활성 개인정보 노출  
+reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\Explorer" /v "HideRecommendedSection" /t REG_DWORD /d "1" /f
+
+echo https://www.tenforums.com/tutorials/100629-remove-link-state-power-management-power-options-windows-10-a.html  
+echo nvlddmkm 13 그래픽 카드 오류 문제 그래픽 카드가 절전 모드 하는 현상 버그 같다.
+REG ADD "HKLM\SYSTEM\CurrentControlSet\Control\Power\PowerSettings\501a4d13-42af-4429-9fd1-a8218c268e20\ee12f906-d277-404b-b6da-e5fa1a576df5" /v Attributes /t REG_DWORD /d 2 /f
+powercfg -attributes SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 -ATTRIB_HIDE
+
+echo ID 5379 관련 https://winaero.com/add-ahci-link-power-management-to-power-options-in-windows/#:~:text=AHCI%20Link%20Power%20Management%20configures,of%20the%20classic%20Control%20Panel.
+echo https://answers.microsoft.com/en-us/windows/forum/all/excessive-security-log-events-event-id-5379/8eb0c350-ce2f-4521-9cfd-f7b816d54715
+powercfg -attributes SUB_DISK 0b2d69d7-a2a1-449c-9680-f91c70521c60 -ATTRIB_HIDE
+REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Power\PowerSettings\0012ee47-9041-4b5d-9b77-535fba8b1442\0b2d69d7-a2a1-449c-9680-f91c70521c60" /v "Attributes" /t REG_DWORD /d 2 /f
+
+echo How to disable permanently Microsoft Edge Webview2 Runtime? | Windows 11 Forum (elevenforum.com)
+echo gpedit.msc 설치
+FOR %F IN ("%SystemRoot%\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientTools-Package~*.mum") DO (DISM /Online /NoRestart /Add-Package:"%F") 
+FOR %F IN ("%SystemRoot%\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientExtensions-Package~*.mum") DO (DISM /Online /NoRestart /Add-Package:"%F")
+echo .
+ 
+echo obs 백업 복구  https://cafe.daum.net/candan/I45w/52
+Bandizip.exe c %USERPROFILE%\Desktop\obs-studio.zip %appdata%\obs-studio
+echo 이렇게 하면 바탕 화면에 알아서 파일이 백업됨
+
+echo 백업 했던 것을 다시 복구 하기.
+rd /s /q %appdata%\obs-studio
+md %appdata%\obs-studio
+Bandizip.exe x %USERPROFILE%\Desktop\obs-studio.zip %appdata%\obs-studio
+Bandizip.exe x %USERPROFILE%\Desktop\obs-studio.zip %appdata%
+
+echo C++ 2015를 설치 하거나 교채 해도 실행이 안되고 오직 C++ 2019를 설치 해야 된다.
+echo 윈도우를 복구 하면 obs가 맛이 가는대. 바이러스 검사 해도 나오지 않음.
+echo https://aka.ms/vs/16/release/VC_redist.x64.exe
+echo https://aka.ms/vs/16/release/VC_redist.x86.exe   
+
+https://dotnet.microsoft.com/en-us/download/dotnet/7.0  
+NET 7.0
+
+7777777777777777777777
+
+echo https://cafe.daum.net/candan/AurF/95 https://www.thewindowsclub.com/enable-enhanced-anti-spoofing-feature-windows-10
+echo 스푸핑 관련
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Biometrics\FacialFeatures" /v EnhancedAntiSpoofing /t REG_DWORD /d 1 /f
+
+echo https://admx.help/?Category=Windows_10_2016&Policy=Microsoft.Policies.EventLogs::Channel_Log_Retention_1&Language=ko-kr   
+echo 실시간 세션 "NT Kernel Logger"에 대한 백업 파일이 최대 크기에 도달했습니다. 
+Reg Add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\EventLog\Application" /v Retention /t REG_SZ /d 1 /f
+
+echo https://admx.help/?Category=Windows_10_2016&Policy=Microsoft.Policies.UserProfiles::CleanupProfiles&Language=ko-kr 
+echo 오래된 사용 하지 않는 사용자 프로필 삭제. 1일
+Reg Add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\System" /v CleanupProfiles /t REG_DWORD /d 1 /f 
+
+echo 프록시 비활성화
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings" /v "AutoDetect" /t REG_DWORD /d "0" /f
+reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v "AutoDetect" /t REG_DWORD /d "0" /f
+
+echo 비활성 안되는 규칙 삭제. 파워쉘 
+remove-netfirewallrule -DisplayName "mDNS(Udp-in)"
+remove-netfirewallrule -DisplayName "시작"
+remove-netfirewallrule -DisplayName "Microsoft Teams"
+
+echo https://appuals.com/kernel-event-tracing-error-0xc0000035-windows/   
+echo https://www.windowsphoneinfo.com/threads/errors-microsoft-windows-remediation-event-2-error-0xc0000035.574393/
+echo 0xc0000035 kernel-eventtracing 2 오류 백신 때문에? 메모리 관련 오류 perfmon 윈도우 R 이벤트 뷰어 xml 켜기 echo SessionName 살펴보기 데이터 수집> 이벤트 추적 세션
+Reg Add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\WMI\Autologger\EventLog-System\{b675ec37-bdb6-4648-bc92-f3fdc74d3ca2}" /v Enabled /t REG_DWORD /d 0 /f
+
+ 
+echo https://cafe.daum.net/candan/GGFN/291 설치 하는 방법 기초
+echo [winget 없는 사용자 설치 안되는 사용자 읽어야 할 부분 입니다]
+echo https://www.lainyzine.com/ko/article/how-to-install-winget-on-windows-10/
+echo 윈도우11은 먼가를 설치 하지 않아도 되지만 윈도우10 사용자의 경우 수동으로 설치 해야 한다.
+echo ms 스토어에서 `앱 설치 관리자`를 설치 해야 한다.
+echo https://www.microsoft.com/store/productId/9NBLGGH4NNS1    매우 웃긴건 다운로드가 안된다.
+echo 그리고 되게 하는 방법은 피드백 허브를 켜고 안된다고 작성 대충 하고 기록 하기를 누른 상태에서 다운로드 버튼을 누르면 안되는게 다운로드가 진행 된다 -_-;;
+
+77777777777777777777777777    22222222222222222222222
+echo 프로그램 자동 설치 
+winget install "PotPlayer" --id "Daum.PotPlayer" -s "winget" --accept-package-agreements
+winget install "LAV Filters" --id "Nevcairiel.LAVFilters" -s "winget" --accept-package-agreements
+winget install "Bandizip" --id "Bandisoft.Bandizip" -s "winget" --accept-package-agreements
+winget install "FastStone Image Viewer" --id "FastStone.Viewer" -s "winget" --accept-package-agreements
+winget install "qBittorrent" --id "qBittorrent.qBittorrent" -s "winget" --accept-package-agreements
+winget install "MKVToolNix" --id "MKVToolNix.MKVToolNix" -s "winget" --accept-package-agreements
+winget install "Sandboxie-Plus" --id "Sandboxie.Plus" -s "winget" --accept-package-agreements
+echo .
+
+winget install "Microsoft Visual C++ 2015-2022 Redistributable (x86)" --id "Microsoft.VC++2015-2022Redist-x86" -s "winget" --accept-package-agreements
+winget install "Microsoft Visual C++ 2015-2022 Redistributable (x64)" --id "Microsoft.VC++2015-2022Redist-x64" -s "winget" --accept-package-agreements
+echo .
+
+winget install "Microsoft .NET Runtime 7.0 Preview" --id "Microsoft.DotNet.Runtime.Preview" -s "winget" --accept-package-agreements
+winget install "GIMP" --id "GIMP.GIMP" -s "winget" --accept-package-agreements
+
+winget install "WinMerge" --id "WinMerge.WinMerge" -s "winget" --accept-package-agreements
+winget install "Revo Uninstaller" --id "RevoUninstaller.RevoUninstaller" -s "winget" --accept-package-agreements
+
+echo 에러가 있음 설치가 안됨
+winget install "VLC media player" --id "VideoLAN.VLC" -s "winget" --accept-package-agreements
+echo https://www.videolan.org/vlc/index.ko.html 수동 설치 하라고 함 -_-;; 말이야 방구야.
+winget install -e --id Daum.PotPlayer
+winget install "Brave" --id "BraveSoftware.BraveBrowser" -s "winget" --accept-package-agreements
+
+winget install "simplewall" --id "Henry++.simplewall" -s "winget" --accept-package-agreements
+
+
+winget upgrade "qBittorrent"
+winget upgrade "MKVToolNix"
+
+winget upgrade --all
+echo 모든 배키지 최신 버전으로
+
+winget install "" --id "" -s "winget" --accept-package-agreements
+winget install "" --id "" -s "winget" --accept-package-agreements
+winget install "" --id "" -s "winget" --accept-package-agreements
+winget install "" --id "" -s "winget" --accept-package-agreements
+
+winget search ""
+
+
+
+
+echo D 드라이브 보안 처리
+
+icacls "d:" 
+takeown /F "d:" /A
+icacls "d:" /grant Administrators:F
+icacls "d:" /deny "*S-1-5-32-568:F" "*S-1-5-17:F" "Guest:F" "*S-1-5-32-546:F" "*S-1-0-0:F" "*S-1-5-7:F"
+icacls "d:" /setowner "NT AUTHORITY\SYSTEM" 
+icacls "d:" /grant:r Administrators:RX
+icacls "d:"  
+echo icacls "d:" /setintegritylevel M
+
+ 
+icacls "d:" 
+takeown /F "d:" /A
+icacls "d:" /grant Administrators:F
+icacls "d:" /remove "*S-1-5-32-568" "*S-1-5-17" "Guest" "*S-1-5-32-546" "*S-1-0-0" "*S-1-5-7"
+icacls "d:" /setowner "NT AUTHORITY\SYSTEM" 
+icacls "d:" /grant:r Administrators:RX
+icacls "d:"  
+ 
+echo netplwiz
+echo 개인정보 한번에 수정 하기 https://cafe.daum.net/candan/ASdB/424 deny 사용안하는 것들 백그라운드 해제 
+echo HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore
+echo HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore
+
+echo ipv6 해제 https://cafe.daum.net/candan/I45j/77
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip6" /v "Start" /t REG_DWORD /d 4 /f
+
+netsh interface teredo set state disabled
+netsh interface ipv6 6to4 set state state=disabled undoonstop=disabled
+netsh interface ipv6 6to4 set interface disabled
+netsh interface ipv6 6to4 set state state=disabled
+netsh interface ipv6 6to4 set relay state=disabled
+netsh interface ipv6 6to4 set routing routing=disabled sitelocals=disabled
+netsh interface ipv6 6to4 set interface "이더넷" disabled
+netsh interface ipv6 isatap set state state=disabled
+
+netsh interface ipv6 set global mldlevel=none
+netsh interface IPV6 set global randomizeidentifier=disabled
+netsh interface IPV6 set privacy state=disable
+netsh interface ipv6 6to4 set state state=disabled
+netsh interface ipv6 set teredo disable
+
+netsh interface ipv6 set global /?
+
+netsh interface ipv6 show global
+
+netsh interface ipv6 set global icmpredirects=disabled
+netsh interface ipv6 set global taskoffload=disabled
+netsh interface ipv6 set global dhcpmediasense=disabled
+netsh interface ipv6 set global randomizeidentifiers=disabled
+netsh interface ipv6 set global loopbacklargemtu=disabled
+netsh interface ipv6 set global sourcebasedecmp=disabled
+netsh interface ipv6 set global flowlabel=disabled
+netsh interface ipv6 set global =disabled
+netsh interface ipv6 set global =disabled
+netsh interface ipv6 set global =disabled
+netsh interface ipv6 set global =disabled
+netsh interface ipv6 set global =disabled 
+
+ netsh interface ipv6 set global neighborcachelimit=1
+netsh interface ipv6 set global routecachelimit=1
+netsh interface ipv6 set global reassemblylimit=1
+netsh interface ipv6 set global reassemblyoutoforderlimit=1
+
+echo ipv6 무식 하게 차단 하기 
+netsh advfirewall firewall add rule name="block from ipv6" dir=in action=block protocol=ANY remoteip=0000::/1
+netsh advfirewall firewall add rule name="block from ipv6" dir=in action=block protocol=ANY remoteip=0000::-ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+netsh advfirewall firewall add rule name="block from ipv6" dir=out action=block protocol=ANY remoteip=0000::/1
+netsh advfirewall firewall add rule name="block from ipv6" dir=out action=block protocol=ANY remoteip=0000::-ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+
+echo 랜덤 하게 문자 15자 만들기 
+powershell -command "-join ((65..90) + (97..122)|get-random -count 15| % {[char]$_})"
+echo 문자가 만들어 지면 홍길동 부분에 붙쳐 넣으면 된다 shutdown /r
+
+
+echo WORKGROUP 구릅 변경 https://www.top-password.com/blog/change-workgroup-name-in-windows-10/
+wmic computersystem where name="%computername%" call joindomainorworkgroup name="홍길동"
+echo 리부팅을 해야 한다 반드시
+
+echo 확인 윈도우키+R 
+sysdm.cpl
+echo 드래그 엔터가 복사 입니다. 붙처 넣기는 마우스 우클릭 입니다.
+
+
+echo secedit 두번째 로그인 이후 수정 하기
+md d:\secedit 
+secedit /export /cfg d:\secedit\cfg2.ini > nul
+
+tar -cvzf secedit2.zip d:\secedit
+echo 만약을 위해 압축 하기
+
+notepad d:\secedit\cfg2.ini
+echo 수정하기
+
+
+echo 적용하기
+secedit /configure /db test.sdb /cfg d:\secedit\cfg2.ini
+echo 입력 하기는 안됨 -_-;; 아쉽게.. 이건 됨. db는 그냥 아무거나 적으면 된다. 없다면
+
+echo 손상여부 확인 즉 내가 만든 것과 시스템에 적용 된 것과 같은지 비교
+secedit /validate d:\secedit\cfg2.ini 
+
+
+echo RDS 원격 연결 안함 다시 켜지곤 한다 https://docs.vmware.com/kr/VMware-Horizon-7/7.13/horizon-published-desktops-applications/GUID-89EDB3EE-06A6-400C-B5CF-D9D82E009EA6.html
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v "WinStationsDisabled" /t REG_SZ /d 1 /f
+
+echo 제한된 파워쉘 https://4sysops.com/archives/mitigating-powershell-risks-with-constrained-language-mode/ https://cafe.daum.net/candan/ASdB/426
+setx /m __PSLockDownPolicy 4
+
+echo 보호 안함 기본값으로 하기 파워쉘 명령어 주어야 할때.    파워쉘이 실행 안되고 에러가 나면 이걸 해제 해야 한다.
+setx /m __PSLockDownPolicy 0
