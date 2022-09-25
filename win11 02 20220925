@@ -1,0 +1,244 @@
+echo SMBClient 중지
+echo 주의 아래 적용 하면 적용중에 리부팅 되니 모두 꺼 놓고 해야 한다.
+
+echo 이걸 써야 한다 https://github.com/MicrosoftDocs/windows-powershell-docs/blob/main/docset/winserver2019-ps/smbshare/Set-SmbServerConfiguration.md
+echo 기본 서버 및 워크스테이션 공유 끄기 
+Set-SmbServerConfiguration -AutoShareServer $False -AutoShareWorkstation $False -Confirm‎:$false
+
+echo SMB 서명 및 암호화 켜기 
+Set-SmbServerConfiguration -RequireSecuritySignature $True -EnableSecuritySignature $True -EncryptData $True -Confirm‎:$false
+
+echo SMB1 끄기 
+Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
+Set-SmbServerConfiguration -EnableSMB2Protocol $false -Force
+
+echo https://www.asrgo.com/index.php?mid=PC_TIP&l=vi&document_srl=230323
+echo 서버 측에서 SMB 다중 채널을 비활성화
+Set-SmbServerConfiguration -EnableMultiChannel $false -Force
+
+echo 클라이언트 측에서 SMB 다중 채널을 비활성화복사
+Set-SmbClientConfiguration -EnableMultiChannel $false -Force
+Disable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol
+echo 리부팅 되면 위의 내용을 다시 입력 하면 된다
+
+echo 상태 확인
+Get-SmbServerConfiguration | Select EnableSMB*Protocol
+echo .
+
+echo 자격 증명 악성코드가 남발 하는거 차단, 자격 증명 신뢰 할수 있는 요구
+echo 단점은 이걸 하면 먼가를 설치 할때 alt del ctrl 누르라고 구찮게 한다. 하지만 그래도 자격증명 열거 보단.. 좋다.
+echo https://admx.help/?Category=Windows_10_2016&Policy=Microsoft.Policies.CredentialsUI::EnableSecureCredentialPrompting&Language=ko-kr    
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\CredUI" /v "EnableSecureCredentialPrompting" /t REG_DWORD /d 1 /f 
+
+echo 자격증명 위임 관련 https://admx.help/?Category=Windows_11_2022&Policy=Microsoft.Policies.CredentialsSSP::RestrictedRemoteAdministration&Language=ko-kr 
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation" /v "RestrictedRemoteAdministration" /t REG_DWORD /d 1 /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation" /v "RestrictedRemoteAdministrationType" /t REG_DWORD /d 3 /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation" /v "DenyDefaultCredentials" /t REG_DWORD /d 1 /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation" /v "AllowDefaultCredentials" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation" /v "DenyFreshCredentials" /t REG_DWORD /d 1 /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation" /v "AllowFreshCredentials" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation" /v "AllowDefCredentialsWhenNTLMOnly" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation" /v "AllowFreshCredentialsWhenNTLMOnly" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation" /v "AllowSavedCredentialsWhenNTLMOnly" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation" /v "AllowProtectedCreds" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation" /v "DenySavedCredentials" /t REG_DWORD /d 1 /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation" /v "AllowSavedCredentials" /t REG_DWORD /d 0 /f
+
+echo 들어오는 NTLM 트래픽 모두거부 https://docs.microsoft.com/ko-kr/windows/security/threat-protection/security-policy-settings/network-security-restrict-ntlm-incoming-ntlm-traffic
+reg add HKEY_LOCAL_MACHINE\System\CurrentControlSet\control\LSA\MSV1_0 /v RestrictReceivingNTLMTraffic /t REG_DWORD /d 2 /f
+
+echo "원격 rpc 클라이언트 제한 모두 차단 0  https://admx.help/?Category=Windows_10_2016&Policy=Microsoft.Policies.RemoteProcedureCalls::RpcRestrictRemoteClients&Language=ko-kr"  
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Rpc"  /v "RestrictRemoteClients" /t REG_DWORD /d 0 /f
+
+echo IE 모드 사용안하기 일부
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Edge\IEToEdge"  /v "RedirectionMode" /t REG_DWORD /d 0 /f
+
+echo 인증서 관리 https://cafe.daum.net/candan/BLQD/72
+
+Set-Location Cert:
+$expired = Get-ChildItem cert:\* ` -recurse -ExpiringInDays 0
+$expired | Remove-Item -DeleteKey
+
+Set-Location C:
+echo # 다시 나오기
+
+ 
+
+echo https://docs.microsoft.com/ko-kr/sysinternals/downloads/sigcheck   
+
+d:
+sigcheck.exe -tv
+sigcheck64.exe -tv
+.\sigcheck64.exe -tv
+
+삭제 방법 Thumbprint: 부분을 적으면 된다.
+Get-ChildItem Cert:\LocalMachine\Root\c843721cbc3ad29910e1f31c99361eedceb6ddds | Remove-Item
+Get-ChildItem Cert:\LocalMachine\Root\??? | Remove-Item
+
+c:
+certutil -urlcache -f http://ctldl.windowsupdate.com/msdownload/update/v3/static/trustedr/en/disallowedcertstl.cab disallowedcertstl.cab
+expand disallowedcertstl.cab -R .\
+certutil -addstore -f disallowed disallowedcert.stl
+
+netplwiz
+certmgr.msc 
+certlm.msc
+
+echo 신뢰 할수 있는서 등록 관리자로 제한하기 https://cafe.daum.net/candan/BLQD/73
+REG ADD "HKLM\SOFTWARE\Policies\Microsoft\SystemCertificates\TrustedPublisher\Safer" /v "AuthenticodeFlags" /t REG_DWORD /d 00000301 /f
+
+echo https://docs.microsoft.com/en-us/sysinternals/downloads/sysmon exe dll 생성 감지
+
+
+echo 위치 끄기
+REG ADD "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\LocationAndSensors" /v "DisableLocation" /t REG_DWORD /d 1 /f
+REG ADD "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\LocationAndSensors" /v "DisableLocationScripting" /t REG_DWORD /d 1 /f
+REG ADD "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\LocationAndSensors" /v "DisableSensors" /t REG_DWORD /d 1 /f
+REG ADD "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\LocationAndSensors" /v "DisableWindowsLocationProvider" /t REG_DWORD /d 1 /f
+
+
+echo 위치 끄기 프린터
+REG ADD "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows NT\Printers" /v "**del.PhysicalLocation" /t REG_SZ /f
+
+echo 자격증명 위임 거부
+REG ADD "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\CredentialsDelegation" /v "ConcatenateDefaults_DenyDefault" /t REG_DWORD /d 1 /f
+REG ADD "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\CredentialsDelegation" /v "DenySavedCredentials" /t REG_DWORD /d 1 /f
+REG ADD "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\CredentialsDelegation\DenyDefaultCredentials" /v "1" /t REG_SZ /d "*" /f
+REG ADD "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\CredentialsDelegation\DenyDefaultCredentials" /v "1" /t REG_SZ /d "*" /f
+REG ADD "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\CredentialsDelegation\DenySavedCredentials" /v "1" /t REG_SZ /d "*" /f
+REG ADD "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\CredentialsDelegation\DenyFreshCredentials" /v "1" /t REG_SZ /d "*" /f
+
+echo ntfs 페이지 암호화
+REG ADD "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Policies" /v "NtfsEncryptPagingFile" /t REG_DWORD /d 1 /f
+
+echo 윈도우에서 내 프린터 관리하도록 허용 사용안함 
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows" /v "LegacyDefaultPrinterMode" /t REG_DWORD /d 1 /f
+
+echo xbox 컨트롤 이버튼 눌러 활성화 사용안함
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\GameBar" /v "UseNexusForGameBarEnabled" /t REG_DWORD /d 0 /f
+
+echo ms 계정 학교 계정 및 검색 결과 사용안함
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\SearchSettings" /v "IsAADCloudSearchEnabled" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\SearchSettings" /v "IsMSACloudSearchEnabled" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\SearchSettings" /v "IsDeviceSearchHistoryEnabled" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\SearchSettings" /v "SafeSearchMode" /t REG_DWORD /d 0 /f
+
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\SearchSettings" /v "SafeSearchMode" /t REG_DWORD /d 0 /f
+
+echo ms 계정 윈도우 종료 이전 사용 했던 앱 다시 시작 하기 해제 https://www.kapilarya.com/automatically-restart-apps-in-windows-10-after-login
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v "RestartApps" /t REG_DWORD /d 0 /f
+
+echo 취악한 네트워크 허용 삭제 https://docs.microsoft.com/en-us/answers/questions/147567/possible-bug-group-policy-domain-controller-allow.html  https://tekdeeps.com/what-administrators-need-to-know-to-fix-microsoft-zero-logon-vulnerability/  삭제 해야만 된다 변경 하면 다시 생성된다 특징 어드민s로 생성됨.
+REG DELETE "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" /F /V "vulnerablechannelallowlist"
+
+echo 취악한 로그인 모두 허용 안함 1이 허용안함 0이 취악한 상태로 되는 허용 https://docs.microsoft.com/en-us/answers/questions/79348/netlogon-secure-channel-cve-2020-1472-clarificatio.html
+REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" /v "FullSecureChannelProtection" /t REG_DWORD /d 1 /f
+
+
+echo 사용자 컨트롤 권한 상승 어렵게 하기, 추천 할만한 이정도만 해도 충분 한것 같다.
+echo 관리자 권한이나 윈도우 프로그램이 켜지려면 무적건 물어 보게 한다 ctrl alt del 눌러야 한다. 기본값은 5
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v ConsentPromptBehaviorAdmin /t REG_DWORD /d 2 /f
+
+echo 0이 기본값이고 제한 하는 거고 1은 uac를 꺼버리는 것이다 위험. https://cafe.daum.net/candan/BLQD/80
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "LocalAccountTokenFilterPolicy" /t REG_DWORD /d 0 /f
+
+echo 잠금 로그인 환경 설정 https://docs.microsoft.com/ko-kr/windows/client-management/mdm/policy-csp-windowslogon
+echo https://admx.help/?Category=Windows_10_2016&Policy=Microsoft.Policies.WindowsLogon::DontDisplayNetworkSelectionUI
+echo 잠금 화면에 앱 알림 차단 1, 잠금 화면 네트워크 표시 안함 1 
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v "DisableLockScreenAppNotifications" /t REG_DWORD /d 1 /f 
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v "DontDisplayNetworkSelectionUI" /t REG_DWORD /d 1 /f 
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v "EnumerateLocalUsersOnDomainJoinedComputers" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v "HideFastUserSwitching" /t REG_DWORD /d 1 /f
+
+echo 2020 LDAP 채널 바인딩 및 LDAP 서명 요구 사항
+echo https://support.microsoft.com/en-gb/topic/2020-ldap-channel-binding-and-ldap-signing-requirements-for-windows-kb4520412-ef185fb8-00f7-167d-744c-f299a66fc00a
+Reg Add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NTDS\Parameters" /v "LDAPServerIntegrity" /t REG_DWORD /d 2
+Reg Add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NTDS\Parameters" /v "LdapEnforceChannelBinding" /t REG_DWORD /d 2
+Reg Add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NTDS\Diagnostics" /v "16 LDAP Interface Events" /t REG_DWORD /d 2
+
+
+echo https://www.tenforums.com/customization/180514-project-scheduled-tasks-can-disabled-without-drastic-impact.html
+echo https://www.nutanix.com/blog/windows-os-optimization-essentials-part-3-services-and-scheduled-tasks
+echo https://github.com/HypsyNZ/ISOKIT
+echo 최적화 리스트
+echo https://chef-koch.bearblog.dev/windows-11-config-by-chef-koch/
+echo 개인 최적화
+
+echo XblGameSaveTask
+SchTasks /Change /Disable /TN "Microsoft\XblGameSave\XblGameSaveTask"
+
+echo 무선 같다 https://docs.microsoft.com/ko-kr/windows-hardware/customize/desktop/unattend/microsoft-windows-wlansvc
+echo CDSSync
+SchTasks /Change /Disable /TN "Microsoft\Windows\WlanSvc\CDSSync"
+
+echo 수상함 $(@%SystemRoot%\system32\Windows.StateRepositoryClient.dll,-602)
+echo MaintenanceTasks
+SchTasks /Change /Disable /TN "Microsoft\Windows\StateRepository\MaintenanceTasks"
+
+echo 수상한? $(@%SystemRoot%\system32\AppListBackupLauncher.dll,-602)
+echo Backup
+SchTasks /Change /Disable /TN "Microsoft\Windows\AppListBackup\Backup"
+
+echo 원격 관련 https://www.bleepingcomputer.com/news/microsoft/microsoft-releases-remote-push-to-install-feature-in-windows-10-store-app/
+echo Registration
+echo LoginCheck
+SchTasks /Change /Disable /TN "Microsoft\Windows\PushToInstall\Registration"
+SchTasks /Change /Disable /TN "Microsoft\Windows\PushToInstall\LoginCheck"
+
+echo 베터리 관련 최적화 같음
+echo AnalyzeSystem
+SchTasks /Change /Disable /TN "Microsoft\Windows\Power Efficiency Diagnostics\AnalyzeSystem"
+
+echo 먼지 모르겠지만 키보드 관련 같다. 
+echo PenSyncDataAvailable 
+LocalUserSyncDataAvailable
+SchTasks /Change /Disable /TN "Microsoft\Windows\Input\PenSyncDataAvailable "
+SchTasks /Change /Disable /TN "Microsoft\Windows\Input\LocalUserSyncDataAvailable"
+
+echo 클라우드 같음 
+echo RefreshCache
+SchTasks /Change /Disable /TN "Microsoft\Windows\Flighting\OneSettings\RefreshCache"
+
+
+echo 4625 Guest 해킹시도? https://cafe.daum.net/candan/BLQD/79  
+echo 네트워크 보안: NTLM 제한: 이 도메인의 NTLM 인증 https://www.windows-security.org/3c176b6ee31de9f110a86f55f6ef7d0f/network-security-restrict-ntlm-ntlm-authentication-in-this-domain
+echo 7 모든 인증 거부
+Reg Add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" /v "RestrictNTLMInDomain" /t REG_DWORD /d 7
+
+echo 잠금 화면 알림 해제 https://cafe.daum.net/candan/GGFN/331
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "ContentDeliveryAllowed" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "FeatureManagementEnabled" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "OemPreInstalledAppsEnabled" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "PreInstalledAppsEnabled" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "PreInstalledAppsEverEnabled" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "RotatingLockScreenEnabled" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "RotatingLockScreenOverlayEnabled" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SilentInstalledAppsEnabled" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SlideshowEnabled" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SoftLandingEnabled" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-310093Enabled" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-338388Enabled" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-338389Enabled" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-Enabled" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SystemPaneSuggestionsEnabled" /t REG_DWORD /d 0 /f
+
+echo 만약 랜덤 잠김 배경 화면을 원하면
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "RotatingLockScreenEnabled" /t REG_DWORD /d 1 /f
+echo .
+
+echo 지저분한 C:\Windows\WinSxS\Temp\ 폴더 정리 하기
+echo https://superuser.com/questions/1024441/cleanup-c-windows-winsxs-temp-pendingdeletes-and-pendingrenames
+echo https://lazyadmin.nl/it/dism-command/
+
+DISM /online /Cleanup-Image /StartComponentCleanup
+Dism /online /Cleanup-Image /StartComponentCleanup /ResetBase
+
+echo 계정 최소 암호 길이 감사 https://support.microsoft.com/ko-kr/topic/%ED%8A%B9%EC%A0%95-%EB%B2%84%EC%A0%84%EC%9D%98-%EC%95%94%ED%98%B8-%EA%B8%B8%EC%9D%B4-%EA%B0%90%EC%82%AC-%EB%B0%8F-%EC%A0%81%EC%9A%A9-windows-5ef7fecf-3325-f56b-cc10-4fd565aacc59  https://github.com/dsccommunity/SecurityPolicyDsc/issues/166
+REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\SAM" /v "MinimumPasswordLengthAudit" /t REG_DWORD /d 7 /f
+
+ 
+
+echo WinStationsDisabled 변경 되는 문제 공유 관련 해제 https://cafe.daum.net/candan/BLQD/82
+
+schtasks /create /tn WinStationsDisabled /tr "reg.exe add  \"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\" /v WinStationsDisabled /d 1 /t REG_SZ /f" /sc ONLOGON /rl HIGHEST /np
+echo 성공한 레지스트 등록
