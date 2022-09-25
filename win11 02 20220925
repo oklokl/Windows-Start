@@ -3,16 +3,18 @@ echo 주의 아래 적용 하면 적용중에 리부팅 되니 모두 꺼 놓고
 
 echo 이걸 써야 한다 https://github.com/MicrosoftDocs/windows-powershell-docs/blob/main/docset/winserver2019-ps/smbshare/Set-SmbServerConfiguration.md
 echo 기본 서버 및 워크스테이션 공유 끄기 
-Set-SmbServerConfiguration -AutoShareServer $False -AutoShareWorkstation $False -Confirm‎:$false
+Set-SmbServerConfiguration -AutoShareServer $False -AutoShareWorkstation $false -Force
+echo 에러가 발생 한다 -Confirm:$false 사이에서.
 
 echo SMB 서명 및 암호화 켜기 
-Set-SmbServerConfiguration -RequireSecuritySignature $True -EnableSecuritySignature $True -EncryptData $True -Confirm‎:$false
+Set-SmbServerConfiguration -RequireSecuritySignature $True -EnableSecuritySignature $True -EncryptData $True -Force
+echo 에러가 발생 한다 -Confirm:$false 사이에서.
 
 echo SMB1 끄기 
 Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
 Set-SmbServerConfiguration -EnableSMB2Protocol $false -Force
 
-echo https://www.asrgo.com/index.php?mid=PC_TIP&l=vi&document_srl=230323
+echo "https://www.asrgo.com/index.php?mid=PC_TIP&l=vi&document_srl=230323"
 echo 서버 측에서 SMB 다중 채널을 비활성화
 Set-SmbServerConfiguration -EnableMultiChannel $false -Force
 
@@ -152,9 +154,9 @@ REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogo
 
 echo 2020 LDAP 채널 바인딩 및 LDAP 서명 요구 사항
 echo https://support.microsoft.com/en-gb/topic/2020-ldap-channel-binding-and-ldap-signing-requirements-for-windows-kb4520412-ef185fb8-00f7-167d-744c-f299a66fc00a
-Reg Add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NTDS\Parameters" /v "LDAPServerIntegrity" /t REG_DWORD /d 2
-Reg Add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NTDS\Parameters" /v "LdapEnforceChannelBinding" /t REG_DWORD /d 2
-Reg Add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NTDS\Diagnostics" /v "16 LDAP Interface Events" /t REG_DWORD /d 2
+Reg Add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NTDS\Parameters" /v "LDAPServerIntegrity" /t REG_DWORD /d 2 /f
+Reg Add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NTDS\Parameters" /v "LdapEnforceChannelBinding" /t REG_DWORD /d 2 /f
+Reg Add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NTDS\Diagnostics" /v "16 LDAP Interface Events" /t REG_DWORD /d 2 /f
 
 
 echo https://www.tenforums.com/customization/180514-project-scheduled-tasks-can-disabled-without-drastic-impact.html
@@ -203,7 +205,7 @@ SchTasks /Change /Disable /TN "Microsoft\Windows\Flighting\OneSettings\RefreshCa
 echo 4625 Guest 해킹시도? https://cafe.daum.net/candan/BLQD/79  
 echo 네트워크 보안: NTLM 제한: 이 도메인의 NTLM 인증 https://www.windows-security.org/3c176b6ee31de9f110a86f55f6ef7d0f/network-security-restrict-ntlm-ntlm-authentication-in-this-domain
 echo 7 모든 인증 거부
-Reg Add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" /v "RestrictNTLMInDomain" /t REG_DWORD /d 7
+Reg Add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters" /v "RestrictNTLMInDomain" /t REG_DWORD /d 7 /f
 
 echo 잠금 화면 알림 해제 https://cafe.daum.net/candan/GGFN/331
 REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "ContentDeliveryAllowed" /t REG_DWORD /d 0 /f
@@ -242,3 +244,19 @@ echo WinStationsDisabled 변경 되는 문제 공유 관련 해제 https://cafe.
 
 schtasks /create /tn WinStationsDisabled /tr "reg.exe add  \"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\" /v WinStationsDisabled /d 1 /t REG_SZ /f" /sc ONLOGON /rl HIGHEST /np
 echo 성공한 레지스트 등록
+
+ 
+
+echo 이걸로도 해결 안된다.
+
+echo FIPS 사용 하면 이벤트가 너무 많이 발생 하는대 이걸 해제 하는 것이다
+
+echo https://cafe.daum.net/candan/ASdB/428 https://cafe.daum.net/candan/GGFN/342
+
+auditpol /set /subcategory:"시스템 무결성" /success:disable /failure:enable
+
+ 
+
+echo 인사이드 가입 하면 생긴다 삭제 안해도 됨
+Get-ChildItem Cert:\LocalMachine\Root\F8DB7E1C16F1FFD4AAAD4AAD8DFF0F2445184AEB | Remove-Item
+Get-ChildItem Cert:\LocalMachine\Root\6CA22E5501CC80885FF281DD8B3338E89398EE18 | Remove-Item
