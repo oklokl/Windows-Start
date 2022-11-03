@@ -15,3 +15,12 @@ disable-windowsoptionalfeature -online -featureName Printing-XPSServices-Feature
 echo 만들어진거 보기
 get-windowsoptionalfeature -online | ft | more > d:\get-windowsoptionalfeature.txt
 Get-WindowsOptionalFeature -Online
+
+echo -NoRestart 부팅 여부 물어 보지 않게 하기
+Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Enabled" -and $_.FeatureName -like "MediaPlayback"} | % {disable-windowsoptionalfeature -online -featureName $_.FeatureName -NoRestart}
+Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Enabled" -and $_.FeatureName -like "WindowsMediaPlayer"} | % {disable-windowsoptionalfeature -online -featureName $_.FeatureName -NoRestart}
+Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Enabled" -and $_.FeatureName -like "*Printing*"} | % {disable-windowsoptionalfeature -online -featureName $_.FeatureName -NoRestart}
+Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Enabled" -and $_.FeatureName -like "*SMB1*"} | % {disable-windowsoptionalfeature -online -featureName $_.FeatureName -NoRestart}
+Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Enabled" -and $_.FeatureName -like "*Internet-Explorer*"} | % {disable-windowsoptionalfeature -online -featureName $_.FeatureName -NoRestart}
+Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Enabled" -and $_.FeatureName -like "*MSRDC*"} | % {disable-windowsoptionalfeature -online -featureName $_.FeatureName -NoRestart}
+Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Enabled" -and $_.FeatureName -like "*WorkFolders*"} | % {disable-windowsoptionalfeature -online -featureName $_.FeatureName -NoRestart}
