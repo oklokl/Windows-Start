@@ -1,0 +1,17 @@
+echo "선택 항목 일괄 활성화 스크림트 아래 예문이" 
+echo "https://cafe.daum.net/candan/GGFN/371 " 
+echo "https://stackoverflow.com/questions/60609574/how-to-enable-wcf-services-on-windows-10-with-powershell "
+Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Disabled" -and $_.FeatureName -like "WCF"} | % {Enable-WindowsOptionalFeature -Online -FeatureName $_.FeatureName -All}
+
+echo "응용 하여 성공 하였다 이때 주의 할 점은 Enable가 아니라 Enabled 이다 그리고 끝에 -All 도 빼주어야 한다 겨우 성공 ㅎㅎ 후"
+Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Enabled" -and $_.FeatureName -like "*Printing*"} | % {disable-windowsoptionalfeature -online -featureName $_.FeatureName}
+
+echo "테스트 해보기 위해서는 활성화 하고 응용 부분을 넣으면 된다"
+Enable-windowsoptionalfeature -online -featureName Printing-XPSServices-Features 
+
+echo "수동으로 비활성 하지만 하나씩 하기 구찮으면 일괄로 ㅎㅎ 일괄로 하는 것이 없어서 내가 만듬 ㅋㅋ.. 머 만들었다고 하기도 머한 수준이지만 ㅎㅎ 그래도 최초 같음 웹 문서중에 초보자 동손이 ㅎ"
+disable-windowsoptionalfeature -online -featureName Printing-XPSServices-Features
+
+echo 만들어진거 보기
+get-windowsoptionalfeature -online | ft | more > d:\get-windowsoptionalfeature.txt
+Get-WindowsOptionalFeature -Online
