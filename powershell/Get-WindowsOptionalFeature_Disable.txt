@@ -1,7 +1,7 @@
 echo "선택 항목 일괄 활성화 스크림트 아래 예문이" 
 echo "https://cafe.daum.net/candan/GGFN/371 " 
 echo "https://stackoverflow.com/questions/60609574/how-to-enable-wcf-services-on-windows-10-with-powershell "
-Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Disabled" -and $_.FeatureName -like "WCF"} | % {Enable-WindowsOptionalFeature -Online -FeatureName $_.FeatureName -All}
+echo Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Disabled" -and $_.FeatureName -like "WCF"} | % {Enable-WindowsOptionalFeature -Online -FeatureName $_.FeatureName -All}
 
 echo "응용 하여 성공 하였다 이때 주의 할 점은 Enable가 아니라 Enabled 이다 그리고 끝에 -All 도 빼주어야 한다 겨우 성공 ㅎㅎ 후"
 Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Enabled" -and $_.FeatureName -like "*Printing*"} | % {disable-windowsoptionalfeature -online -featureName $_.FeatureName}
