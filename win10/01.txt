@@ -517,7 +517,7 @@ netsh interface ipv6 set global =disabled
 netsh interface ipv6 set global =disabled
 netsh interface ipv6 set global =disabled 
 
- netsh interface ipv6 set global neighborcachelimit=1
+netsh interface ipv6 set global neighborcachelimit=1
 netsh interface ipv6 set global routecachelimit=1
 netsh interface ipv6 set global reassemblylimit=1
 netsh interface ipv6 set global reassemblyoutoforderlimit=1
