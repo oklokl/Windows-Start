@@ -1,7 +1,5 @@
 REM (자격증명 메모리 저장 하지 않음 0) 만약 저장 하려면 1로 하는대. 저장 하면 1은 위험성이 높아진다고.
-
 REM https://cafe.daum.net/candan/BLQD/84
-
 reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest" /v UseLogonCredential /t REG_DWORD /d 0 /F
 
  
