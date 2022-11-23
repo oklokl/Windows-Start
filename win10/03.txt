@@ -1,0 +1,490 @@
+REM (자격증명 메모리 저장 하지 않음 0) 만약 저장 하려면 1로 하는대. 저장 하면 1은 위험성이 높아진다고.
+
+REM https://cafe.daum.net/candan/BLQD/84
+
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest" /v UseLogonCredential /t REG_DWORD /d 0 /F
+
+ 
+
+REM 로그인 실패 임계값 BitLocker
+REM "https://www.stigviewer.com/stig/windows_8/2013-10-01/finding/V-36772"
+REM "https://learn.microsoft.com/ko-kr/windows/security/threat-protection/security-policy-settings/interactive-logon-machine-account-lockout-threshold"
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "MaxDevicePasswordFailedAttempts" /t REG_DWORD /d 4 /f
+
+ 
+
+REM 유효성 검사를 통과한 서명된 실행 파일만 권한 상승 https://blog.naver.com/gigamo/222290509800 
+
+REM "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-gpsb/a9b816e0-075b-4674-a1a9-cecd1d9523e7"
+
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "ValidateAdminCodeSignatures" /t REG_DWORD /d 1 /f
+
+ 
+
+REM 서버에서 참조를 반환했습니다 에러가 날 경우 설치가 안되면 리부팅 해서 원래대로 돌려 놓으면 된다.
+
+REM "https://zkim0115.tistory.com/1018"
+
+REM REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "ValidateAdminCodeSignatures" /t REG_DWORD /d 0 /f
+
+ 
+
+REM icmp 스푸핑 관련 "https://www.stigviewer.com/stig/windows_server_2012_member_server/2014-01-07/finding/V-4111"
+REM ICMP Redict ICMP 리디렉션이 OSPF 생성 경로를 재정의하도록 "사용 안 함" 
+REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" /v "EnableICMPRedirect" /t REG_DWORD /d 1 /f
+
+ 
+
+REM 터치패드 
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TabletInputService" /v "Start" /t REG_DWORD /d 4 /f
+
+ 
+
+REM ipv6 글러벌 관련 사용안함 "https://www.codeproject.com/Articles/12213/Peer-Name-Resolution-PNRP-netsh"
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PeerNet\PNRP\IPV6-Global" /v "Disabled" /t REG_DWORD /d 1 /f
+
+REM upnphost 1900 포트
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\upnphost" /v Start /t REG_DWORD /d 4 /f
+
+ 
+
+REM ipv6 사용안함 장치 관리자
+pnputil /disable-device "SWD\MSRRAS\MS_NDISWANIPV6"
+
+ 
+
+REM 크롬 SSDP 1900 포트 사용안함 "https://bugs.chromium.org/p/chromium/issues/detail?id=1036659"
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome" /v EnableMediaRouter /t REG_DWORD /d 0 /f
+
+ 
+
+REM https://cafe.daum.net/candan/GGFN/351
+
+REM 사용 하지 않는 소켓 죽이기 "https://www.nirsoft.net/utils/winsock_service_providers.html" 
+
+REM tcpip만 두고 모두 해제 하면 된다.
+
+ 
+
+REM 사용안하는 서비스 인터넷 차단
+
+netsh advfirewall firewall add rule name="CryptSvc"    dir=in action=block  protocol=any service=CryptSvc,CDPUserSvc_21e1a,WpnService,RpcSs,Netlogon,VSS,WSearch,PhoneSvc,DcomLaunch,LanmanWorkstation,hidserv,TapiSrv,Schedule,IKEEXT remoteip=any description="Deniega RDP IN"
+netsh advfirewall firewall add rule name="CryptSvc"   dir=out action=block protocol=any service=CryptSvc,CDPUserSvc_21e1a,WpnService,RpcSs,Netlogon,VSS,WSearch,PhoneSvc,DcomLaunch,LanmanWorkstation,hidserv,TapiSrv,Schedule,IKEEXT remoteip=any description="Deniega RDP OUT"
+
+ 
+
+netsh advfirewall firewall add rule name="CryptSvc" dir=in action=block service=LanmanServer description="Deniega RDP IN"
+netsh advfirewall firewall add rule name="CryptSvc" dir=out action=block service=LanmanServer description="Deniega RDP OUT"
+
+ 
+
+REM 악용 프로세스 차단 해보기
+netsh advfirewall firewall add rule name="StartMenuExperienceHost" dir=in program="%SystemRoot%\SystemApps\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\StartMenuExperienceHost.exe" action=block
+netsh advfirewall firewall add rule name="StartMenuExperienceHost" dir=out program="%SystemRoot%\SystemApps\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\StartMenuExperienceHost.exe" action=block
+
+ 
+
+netsh advfirewall firewall add rule name="hackingexe" dir=in program="%SystemRoot%\system32\notepad.exe" action=block
+netsh advfirewall firewall add rule name="hackingexe" dir=out program="%SystemRoot%\system32\notepad.exe" action=block
+
+ 
+
+netsh advfirewall firewall add rule name="hackingexe" dir=in program="%SystemRoot%\system32\consent.exe" action=block
+netsh advfirewall firewall add rule name="hackingexe" dir=out program="%SystemRoot%\system32\consent.exe" action=block
+
+netsh advfirewall firewall add rule name="hackingexe" dir=in program="%SystemRoot%\system32\ntoskrnl.exe" action=block
+netsh advfirewall firewall add rule name="hackingexe" dir=out program="%SystemRoot%\system32\ntoskrnl.exe" action=block
+
+netsh advfirewall firewall add rule name="hackingexe" dir=in program="%SystemRoot%\system32\Taskmgr.exe" action=block
+netsh advfirewall firewall add rule name="hackingexe" dir=out program="%SystemRoot%\system32\Taskmgr.exe" action=block
+
+netsh advfirewall firewall add rule name="hackingexe" dir=in program="%SystemRoot%\system32\explorer.exe" action=block
+netsh advfirewall firewall add rule name="hackingexe" dir=out program="%SystemRoot%\system32\explorer.exe" action=block
+
+ 
+
+netsh advfirewall firewall add rule name="hackingexe" dir=in program="%SystemRoot%\system32\rundll32.exe" action=block
+netsh advfirewall firewall add rule name="hackingexe" dir=out program="%SystemRoot%\system32\rundll32.exe" action=block 
+
+ 
+
+netsh advfirewall firewall add rule name="hackingexe" dir=in program="%SystemRoot%\system32\calc.exe" action=block
+netsh advfirewall firewall add rule name="hackingexe" dir=out program="%SystemRoot%\system32\calc.exe" action=block 
+
+ 
+
+netsh advfirewall firewall add rule name="hackingexe" dir=in program="%SystemRoot%\system32\mspaint.exe" action=block
+netsh advfirewall firewall add rule name="hackingexe" dir=out program="%SystemRoot%\system32\mspaint.exe" action=block 
+
+ 
+
+REM 오페라 1900 udp 차단
+netsh advfirewall firewall add rule name="hackingexe" dir=in program=%localappdata%\Programs\Opera\opera.exe remoteport=1900 protocol=UDP action=block
+netsh advfirewall firewall add rule name="hackingexe" dir=out program=%localappdata%\Programs\Opera\opera.exe remoteport=1900 protocol=UDP action=block
+
+ 
+
+REM "https://cafe.daum.net/candan/GGFN/380?svc=cafeapi 등록 방법"
+
+REM "많이 수상한 위젯 차단 하기 난 위젯 안쓰니깐 머스크 ㅎ"
+for /f "delims=" %a in ('dir /a-d /b /o /s "%ProgramFiles(x86)%\Microsoft\EdgeWebView\Application\msedgewebview2.exe"') do (netsh advfirewall firewall add rule name="EdgeWebView_Blockit" dir=in program="%a" action=block)
+for /f "delims=" %a in ('dir /a-d /b /o /s "%ProgramFiles(x86)%\Microsoft\EdgeWebView\Application\msedgewebview2.exe"') do (netsh advfirewall firewall add rule name="EdgeWebView_Blockit" dir=out program="%a" action=block)
+for /f "delims=" %a in ('dir /a-d /b /o /s "%ProgramFiles%\WindowsApps\msteams.exe"') do (netsh advfirewall firewall add rule name="EdgeWebView_Blockit" dir=in program="%a" action=block)
+for /f "delims=" %a in ('dir /a-d /b /o /s "%ProgramFiles%\WindowsApps\msteams.exe"') do (netsh advfirewall firewall add rule name="EdgeWebView_Blockit" dir=out program="%a" action=block)
+for /f "delims=" %a in ('dir /a-d /b /o /s "%ProgramFiles%\WindowsApps\onenoteim.exe"') do (netsh advfirewall firewall add rule name="EdgeWebView_Blockit" dir=in program="%a" action=block)
+for /f "delims=" %a in ('dir /a-d /b /o /s "%ProgramFiles%\WindowsApps\onenoteim.exe"') do (netsh advfirewall firewall add rule name="EdgeWebView_Blockit" dir=out program="%a" action=block)
+
+ 
+
+REM 스카이프 꺼져 ㅋ 차단 
+
+for /f "delims=" %a in ('dir /a-d /b /o /s "%ProgramFiles%\WindowsApps\Skype*.exe"') do (netsh advfirewall firewall add rule name="EdgeWebView_Blockit" dir=in program="%a" action=block)
+for /f "delims=" %a in ('dir /a-d /b /o /s "%ProgramFiles%\WindowsApps\Skype*.exe"') do (netsh advfirewall firewall add rule name="EdgeWebView_Blockit" dir=out program="%a" action=block)
+
+ 
+
+REM 온드라이브 공동작업 해킹 꺼져
+
+for /f "delims=" %a in ('dir /a-d /b /o /s "%localappdata%\Microsoft\OneDrive\Microsoft.SharePoint.exe"') do (netsh advfirewall firewall add rule name="EdgeWebView_Blockit" dir=in program="%a" action=block)
+for /f "delims=" %a in ('dir /a-d /b /o /s "%localappdata%\Microsoft\OneDrive\Microsoft.SharePoint.exe"') do (netsh advfirewall firewall add rule name="EdgeWebView_Blockit" dir=out program="%a" action=block)
+
+ 
+
+REM "그래픽 접속 업데이트 확인 꺼져"
+for /f "delims=" %a in ('dir /a-d /b /o /s "%windir%\System32\DriverStore\FileRepository\nvdisplay.container.exe"') do (netsh advfirewall firewall add rule name="EdgeWebView_Blockit" dir=in program="%a" action=block)
+for /f "delims=" %a in ('dir /a-d /b /o /s "%windir%\System32\DriverStore\FileRepository\nvdisplay.container.exe"') do (netsh advfirewall firewall add rule name="EdgeWebView_Blockit" dir=out program="%a" action=block)
+
+ 
+
+REM Windows NetMeeting v3.0 이상 공유금지 응용프로그램 공유금지
+REM "https://admx.help/?Category=Windows_8.1_2012R2&Policy=Microsoft.Policies.NetMeeting::PreventSharing&Language=ko-kr"
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Conferencing" /v "NoSharing" /t REG_DWORD /d 1 /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Conferencing" /v "NoSharingDosWindows" /t REG_DWORD /d 1 /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Conferencing" /v "NoSharingDesktop" /t REG_DWORD /d 1 /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Conferencing" /v "NoAppSharing" /t REG_DWORD /d 1 /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Conferencing" /v "NoSharingExplorer" /t REG_DWORD /d 1 /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Conferencing" /v "NoTrueColorSharing" /t REG_DWORD /d 1 /f
+
+REM 복구 reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Conferencing" /f
+
+ 
+
+REM "https://social.technet.microsoft.com/Forums/ie/en-US/39e1ddfd-6958-4eca-acc3-4336174c2c07/how-to-disable-sharing-folder-to-all-userscomputers?forum=winserverGP "
+
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoInPlaceSharing" /t REG_DWORD /d 1 /f
+
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoInPlaceSharing" /t REG_DWORD /d 1 /f
+
+REM 온드라이브 OneDrive Office 공동 작업 해제
+
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\OneDrive" /v "EnableHoldTheFile" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\OneDrive" /v "SilentAccountConfig" /t REG_DWORD /d 0 /f
+
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\OneDrive" /v "EnableAllOcsiClients" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\OneDrive" /v "EnableHoldTheFile" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\OneDrive" /v "SilentAccountConfig" /t REG_DWORD /d 0 /f
+
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\OneDrive" /v "EnableAllOcsiClients" /t REG_DWORD /d 0 /f
+
+REM 온드라이브 공동 작성 및 공유 아예 삭제 하기 ㅎㅎ 
+REM "https://admx.help/?Category=OneDrive&Policy=Microsoft.Policies.OneDriveNGSC::EnableAllOcsiClients"
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\OneDrive" /v "EnableAllOcsiClients" /t REG_DWORD /d 0 /f
+
+ 
+
+REM "공동 작업 동기화 해제 해도 안되어 다른거 시도"
+
+REM "https://learn.microsoft.com/ko-kr/sharepoint/lists-sync-policies "
+
+ 
+
+REM "디바이스 목록에서 동기화 해제 요즘 해킹을 이쪽으로 하는 느낌이다"
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\OneDrive" /v "DisableNucleusSync" /t REG_DWORD /d 1 /f
+
+REM "다른 조직 동기화"
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\OneDrive" /v "BlockExternalListSync" /t REG_DWORD /d 1 /f
+
+REM "자격증명 로그인 동기화 차단"
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\OneDrive" /v "DisableNucleusSilentConfig" /t REG_DWORD /d 1 /f
+
+ 
+
+REM "디바이스 목록에서 동기화 해제"
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\OneDrive" /v "DisableNucleusSync" /t REG_DWORD /d 1 /f
+
+REM "다른 조직 동기화"
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\OneDrive" /v "BlockExternalListSync" /t REG_DWORD /d 1 /f
+
+REM "자격증명 로그인 동기화 차단"
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\OneDrive" /v "DisableNucleusSilentConfig" /t REG_DWORD /d 1 /f
+
+
+
+REM 다른 조직놈이 온드라이브 건들지 못하게 하기
+REM "https://learn.microsoft.com/en-us/sharepoint/use-group-policy#prevent-users-from-syncing-libraries-and-folders-shared-from-other-organizations"
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\OneDrive" /v "BlockExternalSync" /t REG_DWORD /d 1 /f
+
+ 
+
+REM 온드라이브 자격증명 자동로그인 방지
+REM "https://learn.microsoft.com/ko-kr/sharepoint/lists-sync-policies"
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\OneDrive" /v "DisableNucleusSilentConfig" /t REG_DWORD /d 1 /f
+
+REM 쓸때 없는 앱 삭제
+
+PowerShell -Command "& {Remove-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0}"
+PowerShell -Command "& {Remove-WindowsCapability -Online -Name Browser.InternetExplorer~~~~0.0.11.0}"
+PowerShell -Command "& {Remove-WindowsCapability -Online -Name App.Support.QuickAssist~~~~0.0.1.0}"
+PowerShell -Command "& {Remove-WindowsCapability -Online -Name Print.Fax.Scan~~~~0.0.1.0}"
+
+ 
+
+REM "https://hummingbird.tistory.com/6795" atmfd.dll 없는 파일 등록된거 삭제
+
+REM "https://learn.microsoft.com/ko-kr/security-updates/securitybulletins/2015/ms15-077"
+
+REM "https://gist.github.com/x4x/112b36591c562bc7fbf1f6c91efeb56a"
+
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Font Drivers" /v "Adobe Type Manager" /f
+
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows" /v DisableATMFD /t REG_DWORD /d 1 /F
+
+ 
+
+REM 자격증명 정검
+
+schtasks /change /tn "Microsoft\Windows\AppID\VerifiedPublisherCertStoreCheck" /ENABLE
+
+ 
+
+REM 워크 스테이션 캐쉬 로그인 관련 그리고 잠금. 이게 자꾸 해제 된다. 스크린세이버 관련
+
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v "ForceUnlockLogon" /t REG_DWORD /d 1 /f
+
+ 
+
+REM 워크 스테이션 기능 장금 0
+
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "DisableLockWorkstation" /t REG_DWORD /d 0 /f
+
+ 
+
+REM NTLMv2 NTLM SSP 네트워크 암호화 필요 (쓰지 마라 오지게 느려진다)
+
+https://www.stigviewer.com/stig/windows_server_2016/2019-03-13/finding/V-73695
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" /v NtlmMinClientSec /t REG_DWORD /d 0x20080000 /f
+
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" /v NtlmMinServerSec /t REG_DWORD /d 0x20080000 /f
+
+ 
+
+REM vba 차단 "https://admx.help/?Category=Office2016&Policy=ppt16.Office.Microsoft.Policies.Windows::L_BlockMacroExecutionFromInternet&Language=ko-kr "
+
+REM "https://gist.github.com/sjas/2d7a9b9c976bb2aa410757044d4282c9 "
+
+windows_hardening.cmd.txt
+9.59KB
+
+reg add "HKCU\Software\Policies\Microsoft\Office\12.0\Publisher\Security" /v vbawarnings /t REG_DWORD /d 4 /f
+reg add "HKCU\Software\Policies\Microsoft\Office\12.0\Word\Security" /v vbawarnings /t REG_DWORD /d 4 /f
+reg add "HKCU\Software\Policies\Microsoft\Office\14.0\Publisher\Security" /v vbawarnings /t REG_DWORD /d 4 /f
+reg add "HKCU\Software\Policies\Microsoft\Office\14.0\Word\Security" /v vbawarnings /t REG_DWORD /d 4 /f
+reg add "HKCU\Software\Policies\Microsoft\Office\15.0\Outlook\Security" /v markinternalasunsafe /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Policies\Microsoft\Office\15.0\Word\Security" /v blockcontentexecutionfrominternet /t REG_DWORD /d 1 /f
+reg add "HKCU\Software\Policies\Microsoft\Office\15.0\Excel\Security" /v blockcontentexecutionfrominternet /t REG_DWORD /d 1 /f
+reg add "HKCU\Software\Policies\Microsoft\Office\15.0\PowerPoint\Security" /v blockcontentexecutionfrominternet /t REG_DWORD /d 1 /f
+reg add "HKCU\Software\Policies\Microsoft\Office\15.0\Word\Security" /v vbawarnings /t REG_DWORD /d 4 /f
+reg add "HKCU\Software\Policies\Microsoft\Office\15.0\Publisher\Security" /v vbawarnings /t REG_DWORD /d 4 /f
+reg add "HKCU\Software\Policies\Microsoft\Office\16.0\Outlook\Security" /v markinternalasunsafe /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Policies\Microsoft\Office\16.0\Word\Security" /v blockcontentexecutionfrominternet /t REG_DWORD /d 1 /f
+reg add "HKCU\Software\Policies\Microsoft\Office\16.0\Excel\Security" /v blockcontentexecutionfrominternet /t REG_DWORD /d 1 /f
+reg add "HKCU\Software\Policies\Microsoft\Office\16.0\PowerPoint\Security" /v blockcontentexecutionfrominternet /t REG_DWORD /d 1 /f
+reg add "HKCU\Software\Policies\Microsoft\Office\16.0\Word\Security" /v vbawarnings /t REG_DWORD /d 4 /f
+reg add "HKCU\Software\Policies\Microsoft\Office\16.0\Publisher\Security" /v vbawarnings /t REG_DWORD /d 4 /f
+
+ 
+
+REM 자격증명 강화
+
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\LSASS.exe" /v AuditLevel /t REG_DWORD /d 00000008 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v RunAsPPL /t REG_DWORD /d 00000001 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest" /v UseLogonCredential /t REG_DWORD /d 0 /f
+
+ 
+
+REM DDE malspam 공격 차단
+
+reg add "HKCU\Software\Microsoft\Office\14.0\Word\Options" /v DontUpdateLinks /t REG_DWORD /d 00000001 /f
+reg add "HKCU\Software\Microsoft\Office\14.0\Word\Options\WordMail" /v DontUpdateLinks /t REG_DWORD /d 00000001 /f
+reg add "HKCU\Software\Microsoft\Office\15.0\Word\Options" /v DontUpdateLinks /t REG_DWORD /d 00000001 /f
+reg add "HKCU\Software\Microsoft\Office\15.0\Word\Options\WordMail" /v DontUpdateLinks /t REG_DWORD /d 00000001 /f
+reg add "HKCU\Software\Microsoft\Office\16.0\Word\Options" /v DontUpdateLinks /t REG_DWORD /d 00000001 /f
+reg add "HKCU\Software\Microsoft\Office\16.0\Word\Options\WordMail" /v DontUpdateLinks /t REG_DWORD /d 00000001 /f
+
+ 
+
+REM 모든 프린터 해제 하기 https://cafe.daum.net/candan/GGFN/371
+
+Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Enabled" -and $_.FeatureName -like "MediaPlayback"} | % {disable-windowsoptionalfeature -online -featureName $_.FeatureName -NoRestart}
+Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Enabled" -and $_.FeatureName -like "WindowsMediaPlayer"} | % {disable-windowsoptionalfeature -online -featureName $_.FeatureName -NoRestart}
+Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Enabled" -and $_.FeatureName -like "*Printing*"} | % {disable-windowsoptionalfeature -online -featureName $_.FeatureName -NoRestart}
+Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Enabled" -and $_.FeatureName -like "*SMB1*"} | % {disable-windowsoptionalfeature -online -featureName $_.FeatureName -NoRestart}
+Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Enabled" -and $_.FeatureName -like "*Internet-Explorer*"} | % {disable-windowsoptionalfeature -online -featureName $_.FeatureName -NoRestart}
+Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Enabled" -and $_.FeatureName -like "*MSRDC*"} | % {disable-windowsoptionalfeature -online -featureName $_.FeatureName -NoRestart}
+Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Enabled" -and $_.FeatureName -like "*WorkFolders*"} | % {disable-windowsoptionalfeature -online -featureName $_.FeatureName -NoRestart}
+
+Get-WindowsOptionalFeature -Online | Where-Object {$_.State -like "Enabled" -and $_.FeatureName -like "*WCF*"} | % {disable-windowsoptionalfeature -online -featureName $_.FeatureName -NoRestart}
+
+ 
+
+REM 쓸모 없는 장치 제거 
+
+pnputil /remove-device "SWD\PRINTENUM\{677E2314-E4FF-4126-B216-3C067E7F6D59}"
+pnputil /remove-device "SWD\PRINTENUM\{657B0B53-11CB-474A-B41E-346E4DD1EC65}"
+
+pnputil /remove-device "SWD\PRINTENUM\PrintQueues"
+pnputil /remove-device "ROOT\RDPBUS\0000"
+
+ 
+
+REM svchost.exe 완화 옵션 사용 보안 강화라고 하는대 잘 모르겠다. 
+
+REM "https://admx.help/?Category=Windows_11_2022&Policy=Microsoft.Policies.ServiceControlManager::SvchostProcessMitigationEnable "
+
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\SCMConfig" /v EnableSvchostMitigationPolicy /t REG_DWORD /d 00000001 /f
+
+ 
+
+ 
+
+REM 네트워크 및 로컬 보안 https://cafe.daum.net/candan/ASdB/432  NTLM LocalSystem NULL
+
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" /v "allownullsessionfallback" /t REG_DWORD /d 0 /f 
+
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa" /v UseMachineId /t REG_DWORD /d 1 /F
+
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa\pku2u" /v AllowOnlineID /t REG_DWORD /d 0 /F
+
+ 
+
+ 
+
+REM 계정 보호 알림 regedit
+REM "https://www.elevenforum.com/t/enable-or-disable-windows-security-account-protection-notifications.10189/ "
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows Defender Security Center\Account protection" /v "DisableNotifications" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows Defender Security Center\Account protection" /v "DisableWindowsHelloNotifications" /t REG_DWORD /d 0 /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows Defender Security Center\Account protection" /v "DisableDynamiclockNotifications" /t REG_DWORD /d 0 /f
+
+ 
+
+REM "헛갈리는대 사용안함을 해야 어드민 계정에 올라 타는걸 막는 것 같다 사용 하면 어드민을 활성화 가능 한것. "
+
+REM 사용자 계정 컨트롤: 기본 제공 관리자 계정에 대한 관리자 승인 모드 사용 "https://xtrm.tistory.com/249 "
+
+REM "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-gpsb/7c705718-f58e-4886-8057-37c8fd9aede1 "
+
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "FilterAdministratorToken" /t REG_DWORD /d 0 /f
+
+ 
+
+REM 링크만들지 않기 https://cafe.daum.net/candan/GGFN/373
+
+ 
+
+REM 내 컴퓨터에서 외부로 나가기 연결
+
+fsutil behavior set symlinkeval‎‎uation L2R:0
+
+ 
+
+REM 기본값 나가는 연결 허용 하기 아웃바운드 symlinkeval‎‎uation 문자의 에러가 있다. 그리고 mirr 접속이 안된다 다운로드가
+
+fsutil behavior set symlinkeval‎‎uation L2R:1
+
+ 
+
+fsutil behavior set MftZone 1
+
+symlinkeval‎‎uation  이건 영자가 글을 못쓰게 막아 놔서 복사 하면 뛰어 쓰게 되는대. 다시 붙치면 되네요 ㅎ 
+
+ 
+
+REM 계정 암호 관련 https://cafe.daum.net/candan/GGFN/377
+
+net user guest /passwordreq:yes
+
+ 
+
+REM 게스트 암호 걸기
+
+powershell -command "-join ((35..38) + (48..57) + (65..90) + (97..122)|get-random -count 124| % {[char]$_})"
+
+net user guest "홍길동"
+
+ 
+
+REM 게스트 접속 시간 정하기
+
+net user Guest /times:F,4AM-5AM
+
+ 
+
+REM 게스트 워크 스테이션 제한하기
+
+powershell -command "-join ((48..57) + (65..90) + (97..122)|get-random -count 15| % {[char]$_})"
+
+net user Guest /workstations:홍길동
+
+ 
+
+net user guest
+
+상태 확인
+
+ 
+
+REM 빈암호 사용못하게 하기
+
+REM "https://coconuts.tistory.com/679 사용안함으로 하면 위험 하다고 한다 1로 사용함으로 수정 해야 안전 하다고."
+
+REG ADD "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Lsa" /V LimitBlankPasswordUse /T REG_DWORD /D 1 /F
+
+ 
+
+REM 사용하지 않는 공동 작업 해킹 차단
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun" /v 2201107 /t REG_SZ /d microsoft.sharepoint.exe /f
+
+ 
+
+REM "기타 차단 사용자 경로"
+
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "ForceActiveDesktopOn" /t REG_DWORD /d "0" /f
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoActiveDesktop" /t REG_DWORD /d "1" /f
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoActiveDesktopChanges" /t REG_DWORD /d "1" /f
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoRecentDocsHistory" /t REG_DWORD /d "0" /f
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "DisallowRun" /t REG_DWORD /d "1" /f
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoDriveTypeAutorun" /t REG_DWORD /d "0xff" /f
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun" /v "1" /t REG_SZ /d "mstsc.exe" /f
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun" /v "5" /t REG_SZ /d "smsvchost.exe" /f
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun" /v "2201107" /t REG_SZ /d "microsoft.sharepoint.exe" /f
+
+ 
+
+REM 파워쉘 IE 열지 못하는 에러 IE 차단 하기 https://cafe.daum.net/candan/GGFN/383
+
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\Main" /v "DisableFirstRunCustomize" /t REG_DWORD /d 1 /f
+
+ 
+
+REM "파일 jse 실행 금지 스크립트"
+
+REM https://cafe.daum.net/candan/GGFN/385
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Script Host\Settings" /v "Enabled" /t REG_DWORD /d 0 /f
+
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Script Host\Settings" /v "IgnoreUserSettings" /t REG_DWORD /d 1 /f
+
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows Script Host\Settings" /v "Enabled" /t REG_DWORD /d 0 /f
+
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows Script Host\Settings" /v "IgnoreUserSettings" /t REG_DWORD /d 1 /f
+
+REM "비활성 Enabled, IgnoreUserSettings제거"
