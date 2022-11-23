@@ -4,12 +4,12 @@ REM 주의 아래 적용 하면 적용중에 리부팅 되니 모두 꺼 놓고 
 REM 이걸 써야 한다 https://github.com/MicrosoftDocs/windows-powershell-docs/blob/main/docset/winserver2019-ps/smbshare/Set-SmbServerConfiguration.md
 REM 기본 서버 및 워크스테이션 공유 끄기 
 Set-SmbServerConfiguration -AutoShareServer $False -AutoShareWorkstation $false -Force
-REM 에러가 발생 한다 -Confirm‎:$false 사이에서.
+REM 에러가 발생 한다 -Confirm:$false 사이에서.
 
 
 REM SMB 서명 및 암호화 켜기 
 Set-SmbServerConfiguration -RequireSecuritySignature $True -EnableSecuritySignature $True -EncryptData $True -Force
-REM 에러가 발생 한다 -Confirm‎:$false 사이에서.
+REM 에러가 발생 한다 -Confirm:$false 사이에서.
 
 
 REM SMB1 끄기 
