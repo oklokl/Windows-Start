@@ -1,0 +1,106 @@
+REM 해커가 그림판 켜는 문제. 해커 네트워크 S-1-5-2
+icacls "%windir%\system32\mspaint.exe" 
+takeown /F "%windir%\system32\mspaint.exe" /A
+icacls "%windir%\system32\mspaint.exe" /grant Administrators:F
+icacls "%windir%\system32\mspaint.exe" /setintegritylevel H
+icacls "%windir%\system32\mspaint.exe" /deny "Guest:F" "*S-1-5-32-546:F" "*S-1-0-0:F" "*S-1-5-7:F" "*S-1-5-2:F"
+icacls "%windir%\system32\mspaint.exe" /setowner "NT SERVICE\TrustedInstaller" 
+icacls "%windir%\system32\mspaint.exe" /grant:r Administrators:RX
+icacls "%windir%\system32\mspaint.exe" 
+
+REM 등록한거 삭제 
+takeown /F "%windir%\system32\mspaint.exe" /A
+icacls "%windir%\system32\mspaint.exe" /grant Administrators:F
+icacls "%windir%\system32\mspaint.exe" /remove "Guest" "*S-1-5-32-546" "*S-1-0-0" "*S-1-5-7" *S-1-5-2"
+icacls "%windir%\system32\mspaint.exe" /setowner "NT SERVICE\TrustedInstaller" 
+icacls "%windir%\system32\mspaint.exe" /grant:r Administrators:RX
+icacls "%windir%\system32\mspaint.exe"   
+
+ 
+
+ 
+
+REM 온드라이브 수상한 보안 계정 접근 기본값으로
+takeown /F "%localappdata%\Microsoft\OneDrive" /A /r
+icacls "%localappdata%\Microsoft\OneDrive" /t /q /c /t /reset
+icacls "%localappdata%\Microsoft\OneDrive"
+
+REM 엣지 수상한 보안 계정 접근 기본값으로
+takeown /F "%ProgramFiles(x86)%\Microsoft\Edge\Application" /A /r
+icacls "%ProgramFiles(x86)%\Microsoft\Edge\Application" /t /q /c /t /reset
+icacls "%ProgramFiles(x86)%\Microsoft\Edge\Application"
+
+REM "Microsoft 네트워크 서버: 서버 SPN 대상 이름 유효성 검사 수준.. 요구로 강화 1이 협상. 2가 요구. 0이 끔" 
+
+REM "https://www.stigviewer.com/stig/windows_7/2014-06-27/finding/V-21950 "
+
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" /v "SmbServerNameHardeningLevel" /t REG_DWORD /d 2 /f
+
+ 
+
+REM "명시적 암호 구성 어쩌구 하네요 ㅎㅎ"
+REM "https://support.microsoft.com/en-gb/topic/kb5021131-how-to-manage-the-kerberos-protocol-changes-related-to-cve-2022-37966-fd837ac3-cdec-4e76-a6ec-86e67501407d "
+REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\kdc" /v "DefaultDomainSupportedEncTypes" /t REG_DWORD /d "0X27" /f
+
+REM "Kerberos 서명을 통해 보안 우회 및 권한 상승 취약성을 해결합니다. 이 보안 업데이트는 공격자가 PAC 서명을 디지털 방식"
+REM "https://support.microsoft.com/en-gb/topic/kb5020805-how-to-manage-kerberos-protocol-changes-related-to-cve-2022-37967-997e9acc-67c5-48e1-8d0d-190269bf4efb "
+REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\kdc" /v "KrbtgtFullPacSignature" /t REG_DWORD /d 3 /f
+
+ 
+
+REM "Windows 10에서 공유 경험을 활성화 또는 비활성화하는 방법 휴대폰과 연결 기능 [공유 환경]"
+
+REM "https://www.tenforums.com/tutorials/109989-enable-disable-shared-experiences-windows-10-a.html  "
+
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\System" /v "EnableCdp" /t REG_DWORD /d 0 /f
+
+ 
+
+REM "이벤트뷰어 보안 로그 덮어 쓰지 않음 계속 저장"
+
+REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog\Security" /v "EnableCdp" /t REG_DWORD /d "0xffffffff" /f
+
+ 
+
+REM "https://cafe.daum.net/candan/BLQD/63  mdm 2545 오류 Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Admin 학교 계정 관련 수집 하려고 하는 놈이 있나?"
+
+REG add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager\default\Settings\AllowYourAccount" /v value /t REG_DWORD /d 0 /f
+
+REG add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager\default\Settings\AllowVPN" /v value /t REG_DWORD /d 0 /f
+
+REG add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\MDM" /v DisableRegistration /t REG_DWORD /d 1 /f
+
+ 
+
+REM "온드라이브 미친 업데이트 해킹 당하는 느낌 온드라브 아무리 차단 해도 지멋대로 업데이트 한다 그래서 삭제 했음."
+
+REM "https://cafe.daum.net/candan/Lrrl/3 " 됬다가 갑자기 안되네요 신기 ㅋㅋ;; 되는 것도 신기 하지만. 
+
+REM "https://cafe.daum.net/candan/GGFN/402  "모꼬모지님이 해결
+
+for /f "tokens=2* delims= " %f in ('schtasks /query /fo list /v ^|findstr/irc:".*Onedrive.*task.*"') do (call schtasks /change /tn "%~g" /disable)
+
+for /f "tokens=2* delims= " %f in ('schtasks /query /fo list /v ^|findstr/irc:".*GoogleUpdateTaskMachineUA.*"') do (call schtasks /change /tn "%~g" /disable)
+
+for /f "tokens=2* delims= " %f in ('schtasks /query /fo list /v ^|findstr/irc:".*GoogleUpdateTaskMachineCore.*"') do (call schtasks /change /tn "%~g" /disable)
+
+ 
+
+REM "OneDrive를 파일 저장소로 사용 방지"
+
+REM "https://admx.help/?Category=Windows_10_2016&Policy=Microsoft.Policies.OneDrive::PreventOnedriveFileSync&Language=ko-kr  "
+
+taskkill /f /im OneDrive.exe
+
+%SystemRoot%\SysWOW64\OneDriveSetup.exe /uninstall
+
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\OneDrive" /v "DisableFileSyncNGSC" /t REG_DWORD /d 1 /f
+
+ 
+
+REM 자동로그인 해제 해보기 https://cafe.daum.net/candan/BLQD/91
+schtasks /create /tn NoAutoAdminLogon /tr "reg.exe add  \"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\" /v AutoAdminLogon /d 0 /t REG_DWORD /f" /sc ONLOGON /rl HIGHEST /np
+REM "삭제" 
+REM schtasks /delete /tn AutoAdminLogon
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v "DefaultPassword" /t REG_SZ /f
+REG delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoLogonSID /f
