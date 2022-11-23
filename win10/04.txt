@@ -108,3 +108,5 @@ REG delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winl
 REM ms에 진단 보내기 https://cafe.daum.net/candan/ASdB/435
 REM 난 변태니깐 다 보내 ㅋㅋ 
 REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DataCollection" /v "AllowTelemtery" /t REG_DWORD /d 3 /f
+sc config DiagTrack start= auto
+sc config dmwappushservice start= auto
