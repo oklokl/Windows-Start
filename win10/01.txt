@@ -266,9 +266,8 @@ SeDenyServiceLogonRight = Guest,*S-1-5-32-546,*S-1-0-0,*S-1-5-7,*S-1-5-14,*S-1-5
 SeDenyRemoteInteractiveLogonRight = Guest,*S-1-5-32-546,*S-1-0-0,*S-1-5-7,*S-1-5-113,*S-1-5-14,*S-1-5-17,*S-1-5-32-555,*S-1-5-32-568,*S-1-5-32-575,*S-1-5-32-576,*S-1-5-32-577,*S-1-5-9,*S-1-5-32-544,*S-1-1-0,*S-1-2-0,*S-1-2-1,*S-1-5-80-0
 REM 구차니즘 2개 지우면서 5개 등록 하기.
 
-cfg5555.ini
-20.07KB
-REM 네트워크 거부 추가 버전 캐쉬 로그인 잡은 듯?
+REM 위에거 자동으로 등록 하는 배치파일 https://github.com/oklokl/secedit/blob/main/edit_run/v1.bat 
+REM 네트워크 거부는 자동으로 걸러져서 등록이 안된다 ㅠ 
 
 
 SeServiceLogonRight = *S-1-5-80-0
