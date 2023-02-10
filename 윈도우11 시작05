@@ -1,0 +1,10 @@
+REM "윈도우 로그인시 ctrl alt del 누르기 https://forbes.tistory.com/784"
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v "DisableCAD" /t REG_DWORD /d "1" /f
+
+REM "디펜스 알림 영역 숨기기 https://www.tenforums.com/tutorials/105476-hide-account-protection-windows-security-windows-10-a.html"
+REM "Windows 보안에서 계정 보호 영역을 숨깁니다. 보호해준다고 한다.. 모르겠음 ㅎㅎ"
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Account protection" /v "UILockdown" /t REG_DWORD /d "1" /f
+
+REM "보안 알림 숨기기 반대로 하기 https://admx.help/?Category=Windows_10_2016&Policy=Microsoft.Policies.WindowsDefenderSecurityCenter::Notifications_DisableNotifications"
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Notifications" /v "DisableEnhancedNotifications" /t REG_DWORD /d "0" /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Notifications" /v "DisableNotifications" /t REG_DWORD /d "0" /f
