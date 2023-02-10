@@ -11,5 +11,5 @@ reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Notific
 
 REM "로그인 할때 메시지 출력 하게 하기 https://www.itprotoday.com/programming-languages/how-do-i-add-warning-logon-message"
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v "LegalNoticeCaption" /t REG_SZ /d "로그인하는할때제목" /f
-REM "\0로 칸을 구분 한다"
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v "LegalNoticeText" /t REG_SZ /d "1메시지\0 2메시지\0 3메시지" /f
+REM "\0로 칸을 구분 한다 REG_MULTI_SZ 란걸 주의 해야 한다"
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v "LegalNoticeText" /t REG_MULTI_SZ /d "1메시지\0 2메시지\0 3메시지" /f
