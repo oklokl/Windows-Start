@@ -1,0 +1,11 @@
+REM "대충 아래와 같이 한다고 하네요 ㅎㅎ;; 잘 되면 좋겠네요. "
+REM "https://cafe.daum.net/candan/BLQD/93"
+REM "https://cafe.daum.net/candan/GGFN/414 이전글" 
+
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2" /v "EnforcementMode" /t REG_DWORD /d 1 /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Rules" /v "BlockDLLsInTemp" /t REG_SZ /d "C:\Windows\System32\rundll32.exe" /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Rules\BlockDLLsInTemp" /v "Users" /t REG_MULTI_SZ /d "Everyone" /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Rules\BlockDLLsInTemp" /v "SecurityLevel" /t REG_DWORD /d 0x00030000 /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Rules\BlockDLLsInTemp" /v "Conditions" /t REG_MULTI_SZ /d "%USERPROFILE%\AppData\Local\Temp\*.dll" /f
+
+REM "이 명령은 "rundll32.exe" 프로그램을 사용하여 정책을 시행하는 "BlockDLLsInTemp"라는 새 규칙을 만듭니다. 이 규칙은 "Everyone" 그룹에 적용되며 지정된 파일 형식의 실행을 차단하는 보안 수준 0x00030000을 갖습니다. 마지막으로 "Conditions" 값은 지정된 폴더에서 "*.dll" 확장자를 가진 파일에만 규칙이 적용되도록 지정합니다."
