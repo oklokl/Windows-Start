@@ -1,0 +1,31 @@
+REM "해커가 원격으로 접속 해서 explorer.exe를 켜는 문제 차단 해보기 https://cafe.daum.net/candan/GGFN/414"
+REM "에러 날수 있음 서비스가 없다면"
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All -NoRestart
+Get-AppLockerPolicy -Effective | select -ExpandProperty RuleCollections
+
+REM "대체적으로 실행됨"
+sc config "AppIDSvc" start=auto & net start "AppIDSvc"
+
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2" /v "EnforcementMode" /t REG_DWORD /d 1 /f
+
+REM "게스트 비활성 레지스트"
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\SpecialAccounts\UserList" /v "Guest" /t REG_DWORD /d 0 /f
+
+REM "첫번째 explorer.exe 보안"
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Rules" /v "Rule1" /t REG_SZ /d "C:\Windows\explorer.exe" /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Rules\Rule1" /v "Hash" /t REG_BINARY /d "0123456789abcdef0123456789abcdef01234567" /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Rules\Rule1" /v "SecurityLevel" /t REG_DWORD /d 0x00030000 /f
+
+REM "게스트 AppLocker 에서 explorer.exe 사용 못하기 하기"
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Rules" /v "BlockGuestExplorer" /t REG_SZ /d "C:\Windows\explorer.exe" /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Rules\BlockGuestExplorer" /v "Users" /t REG_MULTI_SZ /d "Guest\0Guests\0IIS_IUSRS" /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Rules\BlockGuestExplorer" /v "SecurityLevel" /t REG_DWORD /d 0x00030000 /f
+
+
+REM "이번에는 게스트 사용자가 svchost.exe를 작동 하는 것을 방지 하는 명령어 입니다"
+
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2" /v "EnforcementMode" /t REG_DWORD /d 1 /f
+
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Rules" /v "BlockGuestSvchost" /t REG_SZ /d "C:\Windows\System32\svchost.exe" /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Rules\BlockGuestSvchost" /v "Users" /t REG_MULTI_SZ /d "Guest\0Guests\0IIS_IUSRS" /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2\Rules\BlockGuestSvchost" /v "SecurityLevel" /t REG_DWORD /d 0x00030000 /f
