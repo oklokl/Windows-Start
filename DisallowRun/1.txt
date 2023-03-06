@@ -20,6 +20,12 @@ del %temp%\tempfile.txt
 reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun" /s > %temp%\tempfile.txt
 for /f "tokens=1,9999*" %a in ('type %temp%\tempfile.txt ^| findstr /i /c:"REG_SZ"') do set maxValue=%a
 if not defined maxValue (set nextValue=1) else (set /a nextValue=%maxValue%+1)
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun" /v %nextValue% /t REG_SZ /d "mdm.exe" /f
+del %temp%\tempfile.txt
+
+reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun" /s > %temp%\tempfile.txt
+for /f "tokens=1,9999*" %a in ('type %temp%\tempfile.txt ^| findstr /i /c:"REG_SZ"') do set maxValue=%a
+if not defined maxValue (set nextValue=1) else (set /a nextValue=%maxValue%+1)
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun" /v %nextValue% /t REG_SZ /d "mdmregistration.dll" /f
 del %temp%\tempfile.txt
 
