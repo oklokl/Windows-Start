@@ -1,0 +1,36 @@
+REM "https://cafe.daum.net/candan/BLQD/97 지저분한 자격증명 인증 관련 보안 해보기"
+
+setx /m __PSLockDownPolicy 0
+
+setx /m __PSLockDownPolicy 4
+
+
+$acl = Get-Acl "HKCU:\Software\Microsoft\IdentityCRL"
+
+$rule1 = New-Object System.Security.AccessControl.RegistryAccessRule(
+"ANONYMOUS LOGON", "FullControl", "ContainerInherit,ObjectInherit", "None", "Deny")
+
+$rule2 = New-Object System.Security.AccessControl.RegistryAccessRule(
+"GUEST", "FullControl", "ContainerInherit,ObjectInherit", "None", "Deny")
+
+$rule3 = New-Object System.Security.AccessControl.RegistryAccessRule(
+"IIS_IUSRS", "FullControl", "ContainerInherit,ObjectInherit", "None", "Deny")
+
+$rule4 = New-Object System.Security.AccessControl.RegistryAccessRule(
+"REMOTE INTERACTIVE LOGON", "FullControl", "ContainerInherit,ObjectInherit", "None", "Deny")
+
+$rule5 = New-Object System.Security.AccessControl.RegistryAccessRule(
+"Remote Management Users", "FullControl", "ContainerInherit,ObjectInherit", "None", "Deny")
+
+$rule6 = New-Object System.Security.AccessControl.RegistryAccessRule(
+"GUESTS", "FullControl", "ContainerInherit,ObjectInherit", "None", "Deny")
+
+
+$acl.SetAccessRule($rule1)
+$acl.SetAccessRule($rule2)
+$acl.SetAccessRule($rule3)
+$acl.SetAccessRule($rule4)
+$acl.SetAccessRule($rule5)
+$acl.SetAccessRule($rule6)
+
+$acl | Set-Acl -Path "HKCU:\Software\Microsoft\IdentityCRL"
