@@ -1,0 +1,13 @@
+REM "https://cafe.daum.net/candan/GGFN/420"
+REM "차단 하고 싶은 프로세스를 등록 하세요 TEST.exe를 지우고 원하는 것을 넣으시면 됩니다"
+REM "지우고 싶다면 regedit 하셔서 HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun 경로에 가셔서 지우세요"
+
+REM "먼져 차단 모드를 활성화 해야 합니다"
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v DisallowRun /t REG_DWORD /d 1 /f
+
+REM "영문.exe 부분에 해당 하는 프로세스가 차단 됩니다"
+reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun" /s > %temp%\tempfile.txt
+for /f "tokens=1,9999*" %a in ('type %temp%\tempfile.txt ^| findstr /i /c:"REG_SZ"') do set maxValue=%a
+if not defined maxValue (set nextValue=1) else (set /a nextValue=%maxValue%+1)
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun" /v %nextValue% /t REG_SZ /d "TEST.exe" /f
+del %temp%\tempfile.txt
