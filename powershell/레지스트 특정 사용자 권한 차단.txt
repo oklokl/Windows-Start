@@ -1,0 +1,37 @@
+REM "레지스트 특정 사용자 권한 차단"
+REM "https://cafe.daum.net/candan/BLQD/97"
+
+setx /m __PSLockDownPolicy 0
+REM 창을 닫고 다시 켜야 한다
+
+$acl = Get-Acl "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management"
+
+$rule1 = New-Object System.Security.AccessControl.RegistryAccessRule(
+"ANONYMOUS LOGON", "FullControl", "ContainerInherit,ObjectInherit", "None", "Deny")
+
+$rule2 = New-Object System.Security.AccessControl.RegistryAccessRule(
+"GUEST", "FullControl", "ContainerInherit,ObjectInherit", "None", "Deny")
+
+$rule3 = New-Object System.Security.AccessControl.RegistryAccessRule(
+"IIS_IUSRS", "FullControl", "ContainerInherit,ObjectInherit", "None", "Deny")
+
+$rule4 = New-Object System.Security.AccessControl.RegistryAccessRule(
+"REMOTE INTERACTIVE LOGON", "FullControl", "ContainerInherit,ObjectInherit", "None", "Deny")
+
+$rule5 = New-Object System.Security.AccessControl.RegistryAccessRule(
+"Remote Management Users", "FullControl", "ContainerInherit,ObjectInherit", "None", "Deny")
+
+$rule6 = New-Object System.Security.AccessControl.RegistryAccessRule(
+"GUESTS", "FullControl", "ContainerInherit,ObjectInherit", "None", "Deny")
+
+$acl.SetAccessRule($rule1)
+$acl.SetAccessRule($rule2)
+$acl.SetAccessRule($rule3)
+$acl.SetAccessRule($rule4)
+$acl.SetAccessRule($rule5)
+$acl.SetAccessRule($rule6)
+
+$acl | Set-Acl -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management"
+
+REM 다 완료 하면 다시 보안 등급 올려주기
+setx /m __PSLockDownPolicy 4
