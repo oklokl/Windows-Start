@@ -16,7 +16,7 @@ ex> https://cafe.daum.net/candan/ASdB/419
 
 https://cafe.daum.net/candan/GGFN/415 WindowsLive:target=virtualapp/didlogical 차단
 
-https://cafe.daum.net/candan/GGFN/420 프로세스 차단 방법
+https://cafe.daum.net/candan/GGFN/420 프로세스 실행 차단 방법
 
 https://cafe.daum.net/candan/GGFN/414 프로세스 사용자 권한 차단(예를 들자면 게스트 차단)
 
