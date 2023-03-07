@@ -1,0 +1,29 @@
+REM "파워쉘로 DisallowRun 쉽게 등록 하기"
+REM "https://cafe.daum.net/candan/GGFN/426"
+
+REM "차단을 활성화 하면 되내요 비활성은 0이고요"
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v DisallowRun /t REG_DWORD /d 1 /f
+
+REM "AAA.exe 이부분을 수정 하시면되내요 추가 하셔도 되고요 잘쓰세요 화팅"
+
+
+REM "파워쉘 명령어 시작 아래를 드래그 해서 붙쳐 넣기 하시면 되내요 AI가 만들어 주었습니다 ㅎㅎb 따봉"
+$regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun"
+$t = @("AAA.exe","BBB.exe","CCC.exe")
+
+$valueNames = (Get-ItemProperty -Path $regPath -ErrorAction SilentlyContinue).PSObject.Properties.Name
+
+$maxValue = 0
+foreach($valueName in $valueNames) {
+    if($valueName -match '^\d+$') {
+        $intValue = [int]$valueName
+        if($intValue -gt $maxValue) {
+            $maxValue = $intValue
+        }
+    }
+}
+
+for($i=0; $i -lt $t.Count; $i++){
+    $number = $maxValue + $i + 1
+    New-ItemProperty -Path $regPath -Name $number -Value $t[$i] -PropertyType String -Force -ea 0
+}
