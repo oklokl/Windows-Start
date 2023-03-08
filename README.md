@@ -16,10 +16,14 @@ ex> https://cafe.daum.net/candan/ASdB/419
 
 https://cafe.daum.net/candan/GGFN/415 WindowsLive:target=virtualapp/didlogical 차단
 
-https://cafe.daum.net/candan/GGFN/420 프로세스 실행 차단 방법
+https://cafe.daum.net/candan/GGFN/420 프로세스 실행 차단 방법(cmd)
+
+https://cafe.daum.net/candan/GGFN/426 프로세스 실행 차단 방법(파워쉘 고급)
 
 https://cafe.daum.net/candan/GGFN/414 프로세스 사용자 권한 차단(예를 들자면 게스트 차단)
 
 https://cafe.daum.net/candan/BLQD/93 temp 폴더 dll 실행 차단
 
 https://cafe.daum.net/candan/BLQD/97 레지스트 사용자 권한 거부(예를 들자면 게스트 차단)
+
+
