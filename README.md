@@ -26,4 +26,6 @@ https://cafe.daum.net/candan/BLQD/93 temp 폴더 dll 실행 차단
 
 https://cafe.daum.net/candan/BLQD/97 레지스트 사용자 권한 거부(예를 들자면 게스트 차단)
 
+https://cafe.daum.net/candan/GGFN/422 AI에게 물어 보는 방법 
+
 
