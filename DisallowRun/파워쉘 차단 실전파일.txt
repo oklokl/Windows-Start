@@ -1,5 +1,5 @@
 $regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun"
-$t = @("DmEnrollmentSvc.exe","MDMDeviceAuth.exe","mdm.exe","mdmregistration.dll","dmclient.exe","mdmserver.exe,"mdmworker.exe","mdmcertfier.dll","mdmhandlers.dll","mdmdebugtool.exe"")
+$t = @("DmEnrollmentSvc.exe","MDMDeviceAuth.exe","mdm.exe","mdmregistration.dll","dmclient.exe","mdmserver.exe","mdmworker.exe","mdmcertfier.dll","mdmhandlers.dll","mdmdebugtool.exe")
 
 $valueNames = (Get-ItemProperty -Path $regPath -ErrorAction SilentlyContinue).PSObject.Properties.Name
 
