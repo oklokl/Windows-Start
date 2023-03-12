@@ -1,0 +1,15 @@
+REM "WpnUserService 보안 강화 자동으로 https://cafe.daum.net/candan/Lrrk/5"
+REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WpnUserService" /v "Start" /t REG_DWORD /d 3 /f
+REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WpnUserService" /v "DependOnService" /t REG_MULTI_SZ /d "RpcSs\0Winmgmt" /f
+REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WpnUserService" /v "ObjectName" /t REG_SZ /d "LocalSystem" /f
+REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WpnUserService" /v "RequiredPrivileges" /t REG_MULTI_SZ /d "SeChangeNotifyPrivilege\0SeImpersonatePrivilege" /f
+
+REM "WpnUserService 경로에서 모두 찾으세요 그리고 test.txt로 입력 하세요" 
+REG QUERY HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services /k /f "WpnUserService_" /s > %temp%\test.txt
+
+REM "입력한 test.txt에서 원하는 내용만 추출 하여 777.txt로 보내세요"
+findstr /C:"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WpnUserService_" %temp%\test.txt > %temp%\777.txt
+
+REM "https://cafe.daum.net/candan/GGFN/446"
+REM "만들어진 내용을 출력 하세요 type 가 출력 하는 말이다. for 예문은 내부에 %i가 임시 표현 방식으로.. 그리고 이것을 do set를 통해서 보내고 보낸 내용을 set 으로 해서 등록 하고. 사용"
+for /f "delims=" %i in ('type %temp%\777.txt') do set "aa=%i" & cmd /V:ON /C "REG ADD "!aa!" /v "Start" /t REG_DWORD /d 3 /f & REG ADD "!aa!" /v "DependOnService" /t REG_MULTI_SZ /d "RpcSs\0Winmgmt" /f & REG ADD "!aa!" /v "ObjectName" /t REG_SZ /d "LocalSystem" /f & REG ADD "!aa!" /v "RequiredPrivileges" /t REG_MULTI_SZ /d "SeChangeNotifyPrivilege\0SeImpersonatePrivilege" /f"
