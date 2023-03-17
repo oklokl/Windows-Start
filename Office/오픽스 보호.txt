@@ -1,0 +1,20 @@
+REM "오픽스 보호하기"
+REM "https://cafe.daum.net/candan/Lrrk/7 https://gist.github.com/sjas/2d7a9b9c976bb2aa410757044d4282c9"
+REM "Office 경로에서 ?.? 모두 찾으세요 그리고 test.txt로 입력 하세요" 
+REG QUERY "HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Office" /k /f "*.*" /s > %temp%\test.txt
+
+REM "입력한 test.txt에서 원하는 내용만 추출 하여 777.txt로 보내세요"
+findstr /C:"HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Office" %temp%\test.txt > %temp%\777.txt
+
+REM "https://cafe.daum.net/candan/GGFN/446"
+REM "만들어진 내용을 출력 하세요 type 가 출력 하는 말이다. for 예문은 내부에 %i가 임시 표현 방식으로.. 그리고 이것을 do set를 통해서 보내고 보낸 내용을 set 으로 해서 등록 하고. 사용"
+for /f "delims=" %i in ('type %temp%\777.txt') do set "aa=%i" & cmd /V:ON /C "REG ADD "!aa!\Publisher\Security" /v "vbawarnings" /t REG_DWORD /d 4 /f & REG ADD "!aa!\Word\Security" /v "vbawarnings" /t REG_DWORD /d "4" /f & REG ADD "!aa!\Outlook\Security" /v "markinternalasunsafe" /t REG_DWORD /d "0" /f & REG ADD "!aa!\Word\Security" /v "blockcontentexecutionfrominternet" /t REG_DWORD /d "1" /f"
+
+REM "두번째 같은 방법"
+for /f "delims=" %i in ('type %temp%\777.txt') do set "aa=%i" & cmd /V:ON /C "REG ADD "!aa!\Excel\Security" /v "blockcontentexecutionfrominternet" /t REG_DWORD /d 1 /f & REG ADD "!aa!\PowerPoint\Security" /v "blockcontentexecutionfrominternet" /t REG_DWORD /d "1" /f & REG ADD "!aa!\Word\Options" /v "DontUpdateLinks" /t REG_DWORD /d "1" /f & REG ADD "!aa!\Word\Options\WordMail" /v "DontUpdateLinks" /t REG_DWORD /d "1" /f"
+
+REM "세번째 같음"
+for /f "delims=" %i in ('type %temp%\777.txt') do set "aa=%i" & cmd /V:ON /C "REG ADD "!aa!\Outlook\Options" /v "disableexchange" /t REG_DWORD /d 1 /f & REG ADD "!aa!\Outlook\Options" /v "disableeas" /t REG_DWORD /d "1" /f & REG ADD "!aa!\Outlook\Options" /v "disablepop3" /t REG_DWORD /d "1" /f & REG ADD "!aa!\Outlook\Options" /v "disableimap" /t REG_DWORD /d "1" /f"
+
+REM "네번째"
+for /f "delims=" %i in ('type %temp%\777.txt') do set "aa=%i" & cmd /V:ON /C "REG ADD "!aa!\Outlook\Options" /v "disableothertypes" /t REG_DWORD /d 1 /f & REG ADD "!aa!\Outlook\setup" /v "DisableOffice365SimplifiedAccountCreation" /t REG_DWORD /d "1" /f & REG ADD "!aa!\Common\Identity" /v "DisableADALatopWAMOverride" /t REG_DWORD /d "1" /f"
