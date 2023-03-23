@@ -1,0 +1,16 @@
+REM https://cafe.daum.net/candan/GGFN/459
+REM Turn on with cmd administrator privileges
+sc config "Spooler" start= demand
+sc start "Spooler"
+
+# Here's what I've tried before. powershell
+Get-PrinterDriver | Format-List Name | Out-File -Encoding OEM "$env:temp\test.txt"
+Get-Content "$env:temp\test.txt" -Encoding OEM | ForEach-Object { $_ -replace "Name : ", "" } | Set-Content "$env:temp\777.txt" -Encoding OEM
+
+Get-Content $env:temp\777.txt | Where { $_.Replace(",","") -ne "" } | Out-File $env:temp\888.txt -Encoding OEM
+
+$file = Get-Content "$env:temp\888.txt"
+Get-Printer | Where-Object {$_.DriverName -eq "$($_.DriverName)"} | Remove-Printer
+
+$file = Get-Content "$env:temp\888.txt"
+Write-Output $file
