@@ -1,0 +1,105 @@
+REM "https://cafe.daum.net/candan/GGFN/460 프린터 하기 너무 어렵다 포기 실패한 노트 입니다 ㅋㅋ 다시 생성됨"
+
+Caution
+Don't follow me. Please watch it for fun.
+And even if you delete it, it will be created again.
+
+
+sc config "Spooler" start= demand
+sc stop "Spooler" 
+
+Back up before editing
+REG EXPORT "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Print\Environments" d:\Print_Environments.reg
+
+REM "Environments find all enhanced drivers in the printer path"
+REG QUERY "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Print\Environments" /k /f "Microsoft enhanced Point and Print compatibility driver" /s > %temp%\test.txt
+
+REM "Extract only the desired content from the entered test.txt and send it to 777.txt"
+findstr /C:"Microsoft enhanced Point and Print compatibility driver" %temp%\test.txt > %temp%\777.txt 
+
+REM "Delete only that path"
+for /f "delims=" %i in ('type %temp%\777.txt') do set "aa=%i" & cmd /V:ON /C "REG delete "!aa!" /f"
+'Microsoft enhanced Point and Print compatibility driver' If you delete one, the following is when you delete several.
+
+ 
+REM "Environments find all enhanced drivers in the printer path"
+REG QUERY "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Print\Environments" /k /f "Microsoft enhanced Point and Print compatibility driver" /s > %temp%\test.txt
+
+REM "Microsoft Shared Fax Driver Find > mark means add, not delete"
+REG QUERY "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Print\Environments" /k /f "Microsoft Shared Fax Driver" /s >> %temp%\test.txt
+REG QUERY "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Print\Environments" /k /f "Microsoft Print To PDF" /s >> %temp%\test.txt
+REG QUERY "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Print\Environments" /k /f "Microsoft Software Printer Driver" /s >> %temp%\test.txt
+REG QUERY "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Print\Environments" /k /f "Microsoft XPS Document Writer v4" /s >> %temp%\test.txt
+
+
+REM "Extract only the desired content from the entered test.txt and send it to 777.txt"
+findstr /C:"Microsoft enhanced Point and Print compatibility driver" %temp%\test.txt > %temp%\777.txt
+
+REM "Microsoft Shared Fax Driver find sentence"
+findstr /C:"Microsoft Shared Fax Driver" %temp%\test.txt >> %temp%\777.txt
+findstr /C:"Microsoft Print To PDF" %temp%\test.txt >> %temp%\777.txt
+findstr /C:"Microsoft Software Printer Driver" %temp%\test.txt >> %temp%\777.txt
+findstr /C:"Microsoft XPS Document Writer v4" %temp%\test.txt >> %temp%\777.txt
+
+REM "Delete only that path"
+for /f "delims=" %i in ('type %temp%\777.txt') do set "aa=%i" & cmd /V:ON /C "REG delete "!aa!" /f" 
+
+
+REM "elimination targets"
+Microsoft enhanced Point and Print compatibility driver
+Microsoft Shared Fax Driver
+Microsoft Print To PDF
+Microsoft Software Printer Driver
+Microsoft XPS Document Writer v4
+
+
+REM claim in my power
+TAKEOWN /f "%windir%\System32\spool\drivers\x64\*" /r /d y
+icacls "%windir%\System32\spool\drivers\x64\*" /reset /T
+icacls "%windir%\System32\spool\drivers\x64\*" /grant Administrator:F
+
+TAKEOWN /f "%windir%\System32\spool\drivers\W32X86\*" /r /d y
+icacls "%windir%\System32\spool\drivers\W32X86\*" /reset /T
+icacls "%windir%\System32\spool\drivers\W32X86\*" /grant Administrator:F
+
+
+# Turn it on with powershell administrator privileges. Delete folder
+Remove-Item -Path "$env:SystemRoot\System32\spool\drivers\x64\[0-99]*" -Recurse -Force
+Remove-Item -Path "$env:SystemRoot\System32\spool\drivers\W32X86\[0-99]*" -Recurse -Force
+Remove-Item -Path "$env:SystemRoot\System32\spool\drivers\x64\PCC" -Recurse -Force
+Remove-Item -Path "$env:SystemRoot\System32\spool\drivers\W32X86\PCC" -Recurse -Force
+
+
+REM Device not installed (Remove the REM in front of it if you want to apply it.) Absolutely not recommended.
+REM reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Settings" /v "PreventDeviceMetadataFromNetwork" /t REG_DWORD /d "1" /f
+REM reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Settings" /v "PreventDeviceMetadataAndThirdPartyDriverDownload" /t REG_DWORD /d "1" /f
+
+REM Restrict printer access
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Spooler" /v EveryoneIncludesAnonymous /t REG_DWORD /d 0 /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Spooler" /v GuestAccess /t REG_DWORD /d 0 /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Spooler" /v GuestsAccess /t REG_DWORD /d 0 /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Spooler" /v IIS_IUSRSAccess /t REG_DWORD /d 0 /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Spooler" /v RemoteInteractiveLogonAccess /t REG_DWORD /d 0 /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Spooler" /v RemoteManagementUsersAccess /t REG_DWORD /d 0 /f
+
+REM Clear printer settings
+powershell.exe -Command "& {Get-ChildItem $env:SystemRoot\System32\spool\V4Dirs | Remove-Item -recurse}"
+
+C:\Windows\System32\spool\V4Dirs 
+
+
+Windows Key + R
+printui /s /t2
+
+# powershell
+Get-Printer | Select-Object Name
+
+
+
+Make sure you have a printer.
+The above are my crappy way.
+
+Even so, it was recreated.
+
+Please watch it just for fun.
+I have a strong will to delete my default printer.
