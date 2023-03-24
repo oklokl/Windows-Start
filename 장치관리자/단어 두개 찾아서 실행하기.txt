@@ -1,0 +1,88 @@
+https://cafe.daum.net/candan/GGFN/470 단어 두개를 찾아서 실행 하는 완성품이네요 ㅎㅎ 와 초보자가 성공 AI의 능력이네요 ㅋㅋ 많이 배움
+원리는 아무것도 모르지만 ㅋㅋ 
+https://youtu.be/8LqyIP-iB2A
+
+# 1. 첫번째 단어 찾기 https://cafe.daum.net/candan/GGFN/466
+# 777.txt 출력물에서 'SM 버스 컨트롤러' 단어를 찾고 위로 올라 가서 '인스턴스' 문장을 찾아서 출력 하세요
+# https://cafe.daum.net/candan/GGFN/466 참조 하세요
+
+$lines = Get-Content d:\777.txt
+$index = -1
+
+foreach($line in $lines) {
+    if($line.Contains("SM 버스 컨트롤러")) {
+        $index = $lines.IndexOf($line) - 1
+        break
+    }
+}
+
+# 1. 두번째 단어 찾기
+$lines = Get-Content d:\777.txt
+$index222 = -1
+
+foreach($line in $lines) {
+    if($line.Contains("Microsoft Print to PDF")) {
+        $index222 = $lines.IndexOf($line) - 1
+        break
+    }
+}
+
+#
+#
+# 2. 위의 문장에서 A에 해당 하는 부분을 찾아서 출력 하기
+for ($i = $index; $i -ge 0; $i--) {
+  if ($lines[$i] -match "^인스턴스") {
+    $result = $lines[$i]
+    break
+  }
+}
+
+$result | Out-File -Encoding UTF8 d:\888.txt
+
+# 2. 두번째 출력 하기
+for ($i = $index222; $i -ge 0; $i--) {
+  if ($lines[$i] -match "^인스턴스") {
+    $result = $lines[$i]
+    break
+  }
+}
+
+$result | Out-File -Encoding UTF8 d:\888222.txt
+
+# 3. 합치기 
+
+type d:\888.txt > d:\5555.txt
+type d:\888222.txt >> d:\5555.txt
+
+Get-Content d:\5555.txt -Encoding Default | Out-File -Encoding UTF8 d:\6666.txt
+
+
+
+
+
+# 4. 공백 제거 인스턴스 문장을 제거 하고 ID만 가지고와서 출력 하기
+# https://cafe.daum.net/candan/GGFN/467 참조 하세요
+
+Get-Content -Path "d:\6666.txt" | 
+ForEach-Object {
+  if($_ -match '^인스턴스.*:.*\s+(.*)$') {
+    Write-Output $Matches[1]
+  }
+} | Out-File -FilePath "d:\999.txt" -Encoding UTF8
+
+
+
+# 출력된 내용을 인코딩 해서 한글 깨짐을 해결 하기
+Get-Content d:\999.txt -Encoding Default | Out-File -Encoding OEM d:\444.txt
+
+
+
+REM 최종 목표 입니다
+REM https://cafe.daum.net/candan/GGFN/464
+REM pnputil /remove-device "SWD\PRINTENUM\{403EA90E-6BDA-4EB4-9BB4-BC40E5920519}" 기본 베이스 
+
+REM
+for /f "delims=" %i in ('type d:\444.txt') do set "aa=%i" & cmd /V:ON /C "echo !aa!"
+
+REM 이제 최종 목표 실행 하기
+for /f "delims=" %i in ('type d:\444.txt') do set "aa=%i" & cmd /V:ON /C "pnputil /remove-device !aa!"
