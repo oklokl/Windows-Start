@@ -7,7 +7,7 @@ REM cmd 관리자 권한으로 실행
 pnputil /enum-devices /drivers > d:\install_drivers.txt
 
 REM 파워쉘 관리자 권한으로 실행
-Get-Content d:\install_drivers.txt-Encoding Default | Out-File -Encoding UTF8 d:\777.txt
+Get-Content d:\install_drivers.txt -Encoding Default | Out-File -Encoding UTF8 d:\777.txt
 자신이 찾으려는 단어 찾으면 되내요
 
 notepad d:\777.txt
