@@ -2,6 +2,19 @@ https://cafe.daum.net/candan/GGFN/470 단어 두개를 찾아서 실행 하는 �
 원리는 아무것도 모르지만 ㅋㅋ 
 https://youtu.be/8LqyIP-iB2A
 
+
+REM cmd 관리자 권한으로 실행
+pnputil /enum-devices /drivers > d:\install_drivers.txt
+
+REM 파워쉘 관리자 권한으로 실행
+Get-Content d:\install_drivers.txt-Encoding Default | Out-File -Encoding UTF8 d:\777.txt
+자신이 찾으려는 단어 찾으면 되내요
+
+notepad d:\777.txt
+777.txt 문서는 반드시 UTF-8(ROM)로 되어 있어야 해요
+
+
+
 # 1. 첫번째 단어 찾기 https://cafe.daum.net/candan/GGFN/466
 # 777.txt 출력물에서 'SM 버스 컨트롤러' 단어를 찾고 위로 올라 가서 '인스턴스' 문장을 찾아서 출력 하세요
 # https://cafe.daum.net/candan/GGFN/466 참조 하세요
