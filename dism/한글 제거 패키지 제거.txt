@@ -1,5 +1,7 @@
 https://cafe.daum.net/candan/I45j/82
 그냥 쓸때 없는 짓 했다 ㅋㅋ.. 그냥 재미로 봐주세요.
+한글 문자열 제거.
+txt 글씨 문자 열 제거 줄 제거 가나다라 제거
 
 Dism /Online /Get-Packages /Format:Table > d:\test.txt 
 
