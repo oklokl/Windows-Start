@@ -1,0 +1,66 @@
+https://cafe.daum.net/candan/I45j/82
+그냥 쓸때 없는 짓 했다 ㅋㅋ.. 그냥 재미로 봐주세요.
+
+Dism /Online /Get-Packages /Format:Table > d:\test.txt 
+
+REM 전승환님께서 만들어주신 것 ㅎㅎ 수정 못해서 그냥 쓰는중 ㅠ 
+PowerShell -Command "& {$FILE = Get-Content """"d:\test.txt"""";$SaveFileDir = """"%temp%\out444.txt"""";foreach ($LINE in $FILE) {foreach($Line in $LINE.Split(' # ')) {Write-Output $Line >> $SaveFileDir;break;}}}"
+
+
+$filePath = "$env:temp\out444.txt"
+$outputFilePath = "$env:temp\out555.txt"
+
+
+# 파일 내용을 읽어옵니다.
+$content = Get-Content $filePath
+
+# 한글이 들어있는 행과 ---- 3개 이상인 행을 제외한 내용을 새 파일에 저장합니다.
+$outputContent = $content | Where-Object { $_ -notmatch "[ㄱ-ㅎㅏ-ㅣ가-힣]" -and $_ -notmatch "^-{3,}$" }
+
+# 결과를 출력합니다.
+Write-Output $outputContent
+
+# 결과를 파일로 저장합니다.
+$outputContent | Out-File $outputFilePath -Encoding UTF8
+
+
+# 빈줄 제거 (이렇게 까지 완료 하면 이쁘게 현재 설치 되어 있는 패키지만 추출 된다)
+Get-Content $env:temp\out555.txt | Where { $_.Replace(",","") -ne "" } | Out-File $env:temp\out6666.txt -Encoding OEM
+
+REM "Microsoft-OneCore로 시작 하는 아이 모두 걸러 내기 삭제 하려고 보니 삭제 할게 없다 ㅋㅋㅋ ㅎㅎㅎ"
+findstr /c:"Microsoft-OneCore" $env:temp\out6666.txt > $env:temp\out7777.txt
+REM findstr /c:"RUS" %DropPath% >> %temp%\CHN_RUS_JPN_ipblocklist.txt
+REM findstr /c:"JPN" %DropPath% >> %temp%\CHN_RUS_JPN_ipblocklist.txt
+
+
+REM 여기에 같은 방법으로 계속 연속 해서 추가 하면 된다. 제거 할꺼만 예를 들자면 
+
+REM findstr /c:"홍길동" $env:temp\out6666.txt >> $env:temp\out7777.txt
+REM findstr /c:"만복이" $env:temp\out6666.txt >> $env:temp\out7777.txt
+REM findstr /c:"미친놈" $env:temp\out6666.txt >> $env:temp\out7777.txt
+REM findstr /c:"대머리" $env:temp\out6666.txt >> $env:temp\out7777.txt
+
+REM 이런식으로 하면 된다는 소리다 ㅎㅎ;;
+
+REM 임시 출력 해보기 
+for /f "delims=" %i in ('type %temp%\out7777.txt') do set "aa=%i" & cmd /V:ON /C "echo !aa!"
+
+REM 이제 최종 목표 실행 하기
+for /f "delims=" %i in ('type %temp%\out7777.txt') do set "aa=%i" & cmd /V:ON /C "Dism /Online /Remove-Package /PackageName:"!aa!" /norestart"
+
+REM 성공.. ㅎㅎ 내가 이걸 왜 만들었는지 모르겠다 -_-;; 패키지가 많은 사람은 쓸모가 있겠다 대충 ㅋㅋㅋ;;
+
+ 
+
+REM 그냥 
+Dism /Online /Get-Packages | findstr "Microsoft-OneCore*"
+
+REM 이렇게 검색 하면 나온다.
+
+ 
+
+Dism /Online /Remove-Package /PackageName:홍길동똥쟁이
+
+REM 이렇게 적어서 제거 하면 된다
+
+REM https://cafe.daum.net/candan/I45j/81    
