@@ -1,11 +1,11 @@
-https://cafe.daum.net/candan/GGFN/518
+REM https://cafe.daum.net/candan/GGFN/518
 
-https://cafe.daum.net/candan/GGFN/470 예전 자료 이전 글 두번째
+REM https://cafe.daum.net/candan/GGFN/470 예전 자료 이전 글 두번째
 
 
-https://www.tenforums.com/tutorials/66152-add-remove-microsoft-xps-document-writer-printer-windows-10-a.html 일반적인 제거 방법 전 이게 안되네요 ㅠ.
-https://cafe.daum.net/candan/GGFN/469 이전 이전글  
-https://youtu.be/8LqyIP-iB2A 영상 설명 ㅎㅎb 
+REM https://www.tenforums.com/tutorials/66152-add-remove-microsoft-xps-document-writer-printer-windows-10-a.html 일반적인 제거 방법 전 이게 안되네요 ㅠ.
+REM https://cafe.daum.net/candan/GGFN/469 이전 이전글  
+REM https://youtu.be/8LqyIP-iB2A 영상 설명 ㅎㅎb 
 
 
 REM cmd 관리자 권한으로 실행
@@ -25,7 +25,8 @@ REM 777.txt 문서는 반드시 UTF-8(ROM)로 되어 있어야 해요
 
  
 
-아래 내용 4개 모두 제거 했다. 옛날 노가다 
+# 아래 내용 4개 모두 제거 했다. 옛날 노가다 
+# https://github.com/oklokl/Windows-Start/blob/main/%EC%A7%80%EC%98%A5%EC%97%90%EC%84%9C%EC%98%A8%20%ED%94%84%EB%A6%B0%ED%84%B0/%EB%85%B8%EA%B0%80%EB%8B%A4.txt
   
 아래는 AI가 잘 만들어 주었다 단순화 천재 ㅎㅎ AI
 
