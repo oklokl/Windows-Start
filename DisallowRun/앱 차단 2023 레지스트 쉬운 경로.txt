@@ -1,0 +1,36 @@
+REM "https://cafe.daum.net/candan/Lrrk/17"
+
+setx /m __PSLockDownPolicy 0
+
+setx /m __PSLockDownPolicy 4
+
+ 
+
+REM "추가 수상한 해킹 프로세스 차단"
+REM "https://cafe.daum.net/candan/Lrrk/2"
+REM "MDM 프로세스들 실행 차단"
+REM "https://cafe.daum.net/candan/GGFN/420 cmd 무식한 방법"
+REM "https://cafe.daum.net/candan/GGFN/426 파워쉘 세련된 방법"
+
+ 
+
+
+$regPath = "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun"
+$t = @("OneDrive.exe","SearchApp.exe")
+
+$valueNames = (Get-ItemProperty -Path $regPath -ErrorAction SilentlyContinue).PSObject.Properties.Name
+
+$maxValue = 0
+foreach($valueName in $valueNames) {
+    if($valueName -match '^\d+$') {
+        $intValue = [int]$valueName
+        if($intValue -gt $maxValue) {
+            $maxValue = $intValue
+        }
+    }
+}
+
+for($i=0; $i -lt $t.Count; $i++){
+    $number = $maxValue + $i + 1
+    New-ItemProperty -Path $regPath -Name $number -Value $t[$i] -PropertyType String -Force -ea 0
+} 
