@@ -1,0 +1,119 @@
+https://cafe.daum.net/candan/GGFN/518
+
+https://cafe.daum.net/candan/GGFN/470 예전 자료 이전 글 두번째
+
+
+https://www.tenforums.com/tutorials/66152-add-remove-microsoft-xps-document-writer-printer-windows-10-a.html 일반적인 제거 방법 전 이게 안되네요 ㅠ.
+https://cafe.daum.net/candan/GGFN/469 이전 이전글  
+https://youtu.be/8LqyIP-iB2A 영상 설명 ㅎㅎb 
+
+
+REM cmd 관리자 권한으로 실행
+pnputil /enum-devices /drivers > d:\install_drivers.txt
+
+# 파워쉘 관리자 권한으로 실행
+Get-Content d:\install_drivers.txt -Encoding Default | Out-File -Encoding UTF8 d:\777.txt
+자신이 찾으려는 단어 찾으면 되내요
+
+notepad d:\777.txt
+REM 777.txt 문서는 반드시 UTF-8(ROM)로 되어 있어야 해요 
+
+
+# 1. 첫번째 단어 찾기 https://cafe.daum.net/candan/GGFN/466
+# 777.txt 출력물에서 'SM 버스 컨트롤러' 단어를 찾고 위로 올라 가서 '인스턴스' 문장을 찾아서 출력 하세요
+# https://cafe.daum.net/candan/GGFN/466 참조 하세요
+
+ 
+
+아래 내용 4개 모두 제거 했다. 옛날 노가다 
+  
+아래는 AI가 잘 만들어 주었다 단순화 천재 ㅎㅎ AI
+
+# 여기서 핵심은 D:\777.txt 파일을 받아서 keywords 부분에 제거 하고자 하는 것들을 넣고 outFiles 파일에 하나씩 넣은 다음에
+
+#  계산을 해서 outputFile "d:\5555.txt"로 출력 하는 것 같다. AI가 만들어 주어 정확히는 나도 잘 모름 ㅎ 아무튼 잘 된다.
+
+ 
+
+$keywords = @("SM 버스 컨트롤러", "Microsoft Print to PDF", "Fax", "Microsoft XPS Document Writer")
+$lines = Get-Content D:\777.txt
+$outFiles = @("d:\888.txt", "d:\888222.txt", "d:\888333.txt", "d:\888444.txt")
+$outputFile = "d:\5555.txt"
+
+function FindInstance($lines, $keyword) {
+    $index = -1
+    foreach ($line in $lines) {
+        if ($line.Contains($keyword)) {
+            $index = $lines.IndexOf($line) - 1
+            break
+        }
+    }
+    for ($i = $index; $i -ge 0; $i--) {
+        if ($lines[$i] -match "^인스턴스") {
+            return $lines[$i]
+        }
+    }
+}
+
+for ($i = 0; $i -lt $keywords.Length; $i++) {
+    $result = FindInstance $lines $keywords[$i]
+    $result | Out-File -Encoding UTF8 $outFiles[$i]
+}
+
+Remove-Item $outputFile -ErrorAction Ignore
+foreach ($file in $outFiles) {
+    Get-Content $file | Add-Content $outputFile
+}
+
+ 
+
+Get-Content d:\5555.txt -Encoding Default | Out-File -Encoding UTF8 d:\6666.txt
+# 이게 꼭 필요 하다
+
+
+
+
+# 4. 공백 제거 인스턴스 문장을 제거 하고 ID만 가지고와서 출력 하기
+# https://cafe.daum.net/candan/GGFN/467 참조 하세요
+
+Get-Content -Path "d:\6666.txt" | 
+ForEach-Object {
+  if($_ -match '^인스턴스.*:.*\s+(.*)$') {
+    Write-Output $Matches[1]
+  }
+} | Out-File -FilePath "d:\999.txt" -Encoding UTF8
+
+
+
+# 출력된 내용을 인코딩 해서 한글 깨짐을 해결 하기
+Get-Content d:\999.txt -Encoding Default | Out-File -Encoding OEM d:\444.txt
+
+
+
+REM 최종 목표 입니다
+REM https://cafe.daum.net/candan/GGFN/464
+REM pnputil /remove-device "SWD\PRINTENUM\{403EA90E-6BDA-4EB4-9BB4-BC40E5920519}" 기본 베이스 
+
+REM
+for /f "delims=" %i in ('type d:\444.txt') do set "aa=%i" & cmd /V:ON /C "echo !aa!"
+
+REM 이제 최종 목표 실행 하기
+for /f "delims=" %i in ('type d:\444.txt') do set "aa=%i" & cmd /V:ON /C "pnputil /remove-device !aa!"
+
+ 
+
+인스턴스 ID:                SWD\PRINTENUM\{??}
+Fax
+
+인스턴스 ID:                SWD\PRINTENUM\{??}
+장치 설명:         Microsoft Print to PDF
+
+인스턴스 ID:                SWD\PRINTENUM\{??}
+장치 설명:         Microsoft XPS Document Writer
+
+인스턴스 ID:                SWD\PRINTENUM\{??}
+장치 설명:         OneNote
+
+ 
+
+이렇게 많내요 ㅎㅎ 이걸 제거 해야 하는 거죠 
